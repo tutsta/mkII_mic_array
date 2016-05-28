@@ -1,0 +1,146 @@
+
+-------------------------------------------------------------------------------
+-- Copyright 2016.
+-- All Rights Reserved.
+--  
+--
+--   File Name:      host_spi.tben
+--   Type:           TBEN
+--   Designer:       J. Tuthill
+--   Created:        Sun Mar 20 17:39:44 2016
+--   Template Rev:   2.0
+--
+--   Title:          Testbench for HOST_SPI.
+--   Description:
+--              This file was automatically generated.
+--              Do not edit!
+--   
+--
+-- 
+-------------------------------------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+
+-------------------------------------------------------------------------------
+entity host_spi_tben is
+
+end host_spi_tben;
+
+-------------------------------------------------------------------------------
+architecture tben of host_spi_tben is
+
+   ---------------------------------------------------------------------------
+   --                          CONSTANT DECLARATIONS                        --
+   ---------------------------------------------------------------------------
+
+   ---------------------------------------------------------------------------
+   --                          SIGNAL DECLARATIONS                          --
+   ---------------------------------------------------------------------------
+   signal clk      : std_logic;
+   signal reset    : std_logic;
+   signal cs_l     : std_logic;
+   signal sclk     : std_logic;
+   signal sdi      : std_logic;
+   signal sdo      : std_logic;
+   signal hst_dv   : std_logic;
+   signal hst_ack  : std_logic;
+   signal cmd      : std_logic_vector(2 downto 0);
+   signal addr     : std_logic_vector(2 downto 0);
+   signal hst_din  : std_logic_vector(31 downto 0);
+   signal hst_dout : std_logic_vector(31 downto 0);
+
+   ---------------------------------------------------------------------------
+   --                        COMPONENT DECLARATIONS                         --
+   ---------------------------------------------------------------------------
+
+
+   component host_spi
+      port (
+         clk      : in  std_logic;
+         reset    : in  std_logic;
+         cs_l     : in  std_logic;
+         sclk     : in  std_logic;
+         sdi      : in  std_logic;
+         sdo      : out std_logic;
+         hst_dv   : out std_logic;
+         hst_ack  : in  std_logic;
+         cmd      : out std_logic_vector(2 downto 0);
+         addr     : out std_logic_vector(2 downto 0);
+         hst_din  : in  std_logic_vector(31 downto 0);
+         hst_dout : out std_logic_vector(31 downto 0)
+         );
+   end component;
+
+
+   component host_spi_vgen
+      port (
+         clk         : buffer std_logic;
+         reset_dly   : buffer std_logic;
+         cs_l_dly    : buffer std_logic;
+         sclk_dly    : buffer std_logic;
+         sdi_dly     : buffer std_logic;
+         sdo         : in     std_logic;
+         hst_dv      : in     std_logic;
+         hst_ack_dly : buffer std_logic;
+         cmd         : in     std_logic_vector(2 downto 0);
+         addr        : in     std_logic_vector(2 downto 0);
+         hst_din_dly : buffer std_logic_vector(31 downto 0);
+         hst_dout    : in     std_logic_vector(31 downto 0)
+         );
+   end component;
+
+
+
+begin
+   ---------------------------------------------------------------------------
+   --                    INSTANTIATE COMPONENTS                             --
+   ---------------------------------------------------------------------------
+
+
+   dut : host_spi
+      port map (
+         clk      => clk,
+         reset    => reset,
+         cs_l     => cs_l,
+         sclk     => sclk,
+         sdi      => sdi,
+         sdo      => sdo,
+         hst_dv   => hst_dv,
+         hst_ack  => hst_ack,
+         cmd      => cmd,
+         addr     => addr,
+         hst_din  => hst_din,
+         hst_dout => hst_dout
+         );
+
+
+   vgen : host_spi_vgen
+      port map (
+         clk         => clk,
+         reset_dly   => reset,
+         cs_l_dly    => cs_l,
+         sclk_dly    => sclk,
+         sdi_dly     => sdi,
+         sdo         => sdo,
+         hst_dv      => hst_dv,
+         hst_ack_dly => hst_ack,
+         cmd         => cmd,
+         addr        => addr,
+         hst_din_dly => hst_din,
+         hst_dout    => hst_dout
+         );
+
+
+   ---------------------------------------------------------------------------
+   --                        CONCURRENT SIGNAL ASSIGNMENTS                  --
+   ---------------------------------------------------------------------------
+
+
+   ---------------------------------------------------------------------------
+   --                         CONCURRENT PROCESSES                          --
+   ---------------------------------------------------------------------------
+
+
+end tben;
+-------------------------------------------------------------------------------
