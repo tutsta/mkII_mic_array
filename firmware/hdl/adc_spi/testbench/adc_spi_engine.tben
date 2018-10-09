@@ -1,0 +1,146 @@
+
+-------------------------------------------------------------------------------
+-- Copyright 2018.
+-- CSIRO.
+-- All Rights Reserved.
+--  
+--
+--   File Name:      adc_spi_engine.tben
+--   Type:           TBEN
+--   Designer:       J. Tuthill
+--   Created:        Sun Oct 07 18:31:59 2018
+--   Template Rev:   2.0
+--
+--   Title:          Testbench for ADC_SPI_ENGINE.
+--   Description:
+--              This file was automatically generated.
+--              Do not edit!
+--   
+--   
+--   
+--   
+--   The following is updated by RCS/CVS.
+--   Modification History:
+--   $Log$
+--
+-- 
+-------------------------------------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+
+
+use std.textio.all;                     -- Text Input/Output.
+
+
+-- User defined use clauses
+
+
+
+
+-------------------------------------------------------------------------------
+entity adc_spi_engine_tben is
+
+end adc_spi_engine_tben;
+
+-------------------------------------------------------------------------------
+architecture tben of adc_spi_engine_tben is
+
+   ---------------------------------------------------------------------------
+   --                          CONSTANT DECLARATIONS                        --
+   ---------------------------------------------------------------------------
+
+
+   ---------------------------------------------------------------------------
+   --                          SIGNAL DECLARATIONS                          --
+   ---------------------------------------------------------------------------
+   signal spi_clk         : std_logic;
+   signal reset           : std_logic;
+   signal adc_spi_rw      : std_logic;
+   signal adc_spi_rw_done : std_logic;
+   signal adc_wr_en       : std_logic;
+   signal cmd_addr        : std_logic_vector(6 downto 0);
+   signal adc_din         : std_logic_vector(7 downto 0);
+   signal adc_dout        : std_logic_vector(7 downto 0);
+
+
+
+
+   ---------------------------------------------------------------------------
+   --                        COMPONENT DECLARATIONS                         --
+   ---------------------------------------------------------------------------
+
+
+   component adc_spi_engine
+      port (
+         spi_clk         : in  std_logic;
+         reset           : in  std_logic;
+         adc_spi_rw      : in  std_logic;
+         adc_spi_rw_done : out std_logic;
+         adc_wr_en       : in  std_logic;
+         cmd_addr        : in  std_logic_vector(6 downto 0);
+         adc_din         : in  std_logic_vector(7 downto 0);
+         adc_dout        : out std_logic_vector(7 downto 0)
+         );
+   end component;
+
+
+   component adc_spi_engine_vgen
+      port (
+         spi_clk         : buffer std_logic;
+         reset_dly       : buffer std_logic;
+         adc_spi_rw_dly  : buffer std_logic;
+         adc_spi_rw_done : in     std_logic;
+         adc_wr_en_dly   : buffer std_logic;
+         cmd_addr_dly    : buffer std_logic_vector(6 downto 0);
+         adc_din_dly     : buffer std_logic_vector(7 downto 0);
+         adc_dout        : in     std_logic_vector(7 downto 0)
+         );
+   end component;
+
+
+
+begin
+   ---------------------------------------------------------------------------
+   --                    INSTANTIATE COMPONENTS                             --
+   ---------------------------------------------------------------------------
+
+
+   dut : adc_spi_engine
+      port map (
+         spi_clk         => spi_clk,
+         reset           => reset,
+         adc_spi_rw      => adc_spi_rw,
+         adc_spi_rw_done => adc_spi_rw_done,
+         adc_wr_en       => adc_wr_en,
+         cmd_addr        => cmd_addr,
+         adc_din         => adc_din,
+         adc_dout        => adc_dout
+         );
+
+
+   vgen : adc_spi_engine_vgen
+      port map (
+         spi_clk         => spi_clk,
+         reset_dly       => reset,
+         adc_spi_rw_dly  => adc_spi_rw,
+         adc_spi_rw_done => adc_spi_rw_done,
+         adc_wr_en_dly   => adc_wr_en,
+         cmd_addr_dly    => cmd_addr,
+         adc_din_dly     => adc_din,
+         adc_dout        => adc_dout
+         );
+
+
+   ---------------------------------------------------------------------------
+   --                        CONCURRENT SIGNAL ASSIGNMENTS                  --
+   ---------------------------------------------------------------------------
+
+
+   ---------------------------------------------------------------------------
+   --                         CONCURRENT PROCESSES                          --
+   ---------------------------------------------------------------------------
+
+
+end tben;

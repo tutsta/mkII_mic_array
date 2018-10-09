@@ -1,0 +1,330 @@
+
+-------------------------------------------------------------------------------
+-- Copyright 2018.
+-- CSIRO.
+-- All Rights Reserved.
+--  
+--
+--   File Name:      control_sm.vgen
+--   Type:           VGEN
+--   Designer:       J. Tuthill
+--   Created:        Mon Mar 12 08:55:16 2018
+--   Template Rev:   2.0
+--
+--   Title:          Vector generator for the control state machine.
+--   Description: 
+--   
+--   
+--   
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+--  The following line is used by the testbench generator and the
+--  av-simulate function. 
+--  NOTE: The time can be changed from ns to; ps,ns,us,ms.
+--              TOTAL SIMULATION TIME (ns): 100 
+--                 generate_simulus_files = true
+--                 generate_capture_files = true
+--                   dont_touch_tben_file = false
+--                    dont_touch_cmd_file = false
+--  TRACE SIGNALS
+--  /CONTROL_SM_TBEN/DUT/*
+--
+-------------------------------------------------------------------------------
+
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use work.mic_array_ctrl_pkg.all;
+
+
+-------------------------------------------------------------------------------
+entity control_sm_vgen is
+   port (
+      clk               : buffer std_logic;
+      reset_dly         : buffer std_logic;
+      hst_dv_dly        : buffer std_logic;
+      hst_ack           : in     std_logic;
+      cmd_dly           : buffer std_logic_vector(2 downto 0);
+      adc_wr_en         : in     std_logic;
+      adc_spi_send      : in     std_logic;
+      adc_send_done_dly : buffer std_logic;
+      local_we          : in     std_logic;
+      source            : in     std_logic;
+      trig_start_str    : in     std_logic;
+      trig_stop_str     : in     std_logic;
+      trig_halt_str     : in     std_logic
+      );
+end control_sm_vgen;
+
+-------------------------------------------------------------------------------
+architecture vgen of control_sm_vgen is
+
+   ---------------------------------------------------------------------------
+   --                 CONSTANT, TYPE AND GENERIC DEFINITIONS                --
+   ---------------------------------------------------------------------------
+   ---------------------------------------------------------------------------
+   --  The INP_DELAY constants correspond to tester timing groups. Edit to
+   --  change INP_DELAY values from the examples below. Delete the unused
+   --  INP_DELAY constants.
+   ---------------------------------------------------------------------------
+
+   constant inp_delay1 : time := 3.0 ns;
+
+   constant main_clock_half_period : time := 10 ns;
+
+   ---------------------------------------------------------------------------
+   --                          SIGNAL DECLARATIONS                          --
+   ---------------------------------------------------------------------------
+   signal reset         : std_logic;
+   signal hst_dv        : std_logic;
+   signal cmd           : std_logic_vector(2 downto 0);
+   signal adc_send_done : std_logic;
+
+
+   ---------------------------------------------------------------------------
+   --                        COMPONENT DECLARATIONS                         --
+   ---------------------------------------------------------------------------
+
+
+begin
+   ---------------------------------------------------------------------------
+   --                    INSTANTIATE COMPONENTS                             --
+   ---------------------------------------------------------------------------
+
+   ---------------------------------------------------------------------------
+   --                    CONCURRENT SIGNAL ASSIGNMENTS                      --
+   ---------------------------------------------------------------------------
+   ---------------------------------------------------------------------------
+   --  Use the timing groups above to assign DUT input delays with respect to
+   --  the clock. Use these to test for Setup/Hold timing violations.
+   ---------------------------------------------------------------------------
+
+   reset_dly         <= reset         after inp_delay1;
+   hst_dv_dly        <= hst_dv        after inp_delay1;
+   cmd_dly           <= cmd           after inp_delay1;
+   adc_send_done_dly <= adc_send_done after inp_delay1;
+
+
+   ---------------------------------------------------------------------------
+   --                         CONCURRENT PROCESSES                          --
+   ---------------------------------------------------------------------------
+
+
+   ---------------------------------------------------------------------------
+   --  Process:       MAIN_CLOCK_GEN 
+   --  Timing Domain: MAIN
+   --  Purpose:       Generates Clock Waveform.
+   --  Outputs:       CLK 
+   --  (The following is used by av-testbench for signals in the vpat file.)
+   --  Signals in this time domain:
+   --       hst_ack
+   --       adc_wr_en
+   --       adc_spi_send
+   --       local_we
+   --       trig_start_str
+   --       trig_stop_str
+   --       trig_halt_str
+   ---------------------------------------------------------------------------
+   main_clock_gen : process
+   begin
+      clk <= '0';
+      --  Wait for the initial start up time. 
+      --  (You can edit the times below; Constants maybe used.)
+      wait for main_clock_half_period;
+
+      endless : loop
+         clk <= '1';
+         wait for main_clock_half_period;
+         clk <= '0';
+         wait for main_clock_half_period;
+      end loop;
+
+   end process main_clock_gen;
+
+
+
+
+   ---------------------------------------------------------------------------
+   --  Process:  DRIVER
+   --  Purpose:  To drive the output signals of the vector generator.
+   --  Inputs:   Feedback from the DUT.
+   --  Outputs:  Inputs to DUT.
+   ---------------------------------------------------------------------------
+
+
+   driver : process
+
+   begin
+      -----------------------------------------------------------------------
+      --  Put your test vectors here!
+      -----------------------------------------------------------------------
+      wait until (clk'event and clk = '1');
+      reset         <= '0';
+      hst_dv        <= '0';
+      cmd           <= "000";
+      adc_send_done <= '0';
+
+      for i in 1 to 10 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+
+      -- Send fetch command
+      hst_dv        <= '1';
+      cmd           <= cmd_fetch_c;
+      wait until (hst_ack = '1');
+      wait until (clk'event and clk = '1');
+      hst_dv        <= '0';
+      wait until (adc_spi_send = '1');
+      wait until (clk'event and clk = '1');
+      wait until (clk'event and clk = '1');
+      wait until (clk'event and clk = '1');
+      wait until (clk'event and clk = '1');
+      wait until (clk'event and clk = '1');
+      adc_send_done <= '1';
+      wait until (adc_spi_send = '0');
+      wait until (clk'event and clk = '1');
+      adc_send_done <= '0';
+      for i in 1 to 20 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+
+      -- Send read command
+      hst_dv <= '1';
+      cmd    <= cmd_read_c;
+      wait until (hst_ack = '1');
+      wait until (clk'event and clk = '1');
+      hst_dv <= '0';
+      for i in 1 to 20 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+
+      -- Send write command
+      hst_dv        <= '1';
+      cmd           <= cmd_write_c;
+      wait until (hst_ack = '1');
+      wait until (clk'event and clk = '1');
+      hst_dv        <= '0';
+      wait until (adc_spi_send = '1');
+      wait until (clk'event and clk = '1');
+      wait until (clk'event and clk = '1');
+      wait until (clk'event and clk = '1');
+      wait until (clk'event and clk = '1');
+      adc_send_done <= '1';
+      wait until (adc_spi_send = '0');
+      wait until (clk'event and clk = '1');
+      adc_send_done <= '0';
+      wait until (clk'event and clk = '1');
+      for i in 1 to 20 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+
+      -- Send start streaming command
+      hst_dv <= '1';
+      cmd    <= cmd_start_str_c;
+      wait until (hst_ack = '1');
+      wait until (clk'event and clk = '1');
+      hst_dv <= '0';
+      for i in 1 to 20 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+
+      -- Send stop streaming command
+      hst_dv <= '1';
+      cmd    <= cmd_stop_str_c;
+      wait until (hst_ack = '1');
+      wait until (clk'event and clk = '1');
+      hst_dv <= '0';
+      for i in 1 to 20 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+
+      -- Send clear errors command
+      hst_dv <= '1';
+      cmd    <= cmd_clear_err_c;
+      wait until (hst_ack = '1');
+      wait until (clk'event and clk = '1');
+      hst_dv <= '0';
+      for i in 1 to 20 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+
+      -- Send reset command
+      hst_dv <= '1';
+      cmd    <= cmd_reset_c;
+      wait until (hst_ack = '1');
+      wait until (clk'event and clk = '1');
+      hst_dv <= '0';
+      for i in 1 to 20 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+
+      -- resetting a failed ADC fetch
+      -- Send fetch command
+      hst_dv <= '1';
+      cmd    <= cmd_fetch_c;
+      wait until (hst_ack = '1');
+      wait until (clk'event and clk = '1');
+      hst_dv <= '0';
+      wait until (adc_spi_send = '1');
+      wait until (clk'event and clk = '1');
+      wait until (clk'event and clk = '1');
+      wait until (clk'event and clk = '1');
+      wait until (clk'event and clk = '1');
+      wait until (clk'event and clk = '1');
+      -- adc_send_done <= '1'; -- ADC fails to respond
+      -- wait until (adc_spi_send = '0');
+      wait until (clk'event and clk = '1');
+      -- adc_send_done <= '0';
+      for i in 1 to 50 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+      -- Send reset command
+      hst_dv <= '1';
+      cmd    <= cmd_reset_c;
+      wait until (hst_ack = '1');
+      wait until (clk'event and clk = '1');
+      hst_dv <= '0';
+      for i in 1 to 20 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+
+      -- resetting a failed ADC write
+      -- Send write command
+      hst_dv <= '1';
+      cmd    <= cmd_write_c;
+      wait until (hst_ack = '1');
+      wait until (clk'event and clk = '1');
+      hst_dv <= '0';
+      wait until (adc_spi_send = '1');
+      wait until (clk'event and clk = '1');
+      wait until (clk'event and clk = '1');
+      wait until (clk'event and clk = '1');
+      wait until (clk'event and clk = '1');
+      -- adc_send_done <= '1'; -- ADC fails to respond
+      -- wait until (adc_spi_send = '0');
+      wait until (clk'event and clk = '1');
+      -- adc_send_done <= '0';
+      wait until (clk'event and clk = '1');
+      for i in 1 to 50 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+      -- Send reset command
+      hst_dv <= '1';
+      cmd    <= cmd_reset_c;
+      wait until (hst_ack = '1');
+      wait until (clk'event and clk = '1');
+      hst_dv <= '0';
+      for i in 1 to 20 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+
+      endless : loop
+         wait until (clk'event and clk = '1');
+      end loop;
+
+
+   end process driver;
+
+end vgen;

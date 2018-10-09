@@ -1,0 +1,232 @@
+
+-------------------------------------------------------------------------------
+-- Copyright 2018.
+-- CSIRO.
+-- All Rights Reserved.
+--  
+--
+--   File Name:      control_sm.tben
+--   Type:           TBEN
+--   Designer:       J. Tuthill
+--   Created:        Mon Mar 12 08:55:21 2018
+--   Template Rev:   2.0
+--
+--   Title:          Testbench for CONTROL_SM.
+--   Description:
+--              This file was automatically generated.
+--              Do not edit!
+--   
+--   
+--   
+--   
+--   The following is updated by RCS/CVS.
+--   Modification History:
+--   $Log$
+--
+-- 
+-------------------------------------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use work.mic_array_ctrl_pkg.all;
+
+-------------------------------------------------------------------------------
+entity control_sm_tben is
+
+end control_sm_tben;
+
+-------------------------------------------------------------------------------
+architecture tben of control_sm_tben is
+
+   ---------------------------------------------------------------------------
+   --                          CONSTANT DECLARATIONS                        --
+   ---------------------------------------------------------------------------
+   type top_ctrl_states_t is (idle_st,         --00
+                              hst_ack_st,      --01
+                              cmd_decode_st);  --02
+
+
+   ---------------------------------------------------------------------------
+   --                          SIGNAL DECLARATIONS                          --
+   ---------------------------------------------------------------------------
+   -- State Machine
+   signal sm_state    : top_ctrl_states_t            := idle_st;
+   signal hst_dv_reg  : std_logic                    := '0';
+   signal hst_ack     : std_logic;
+   signal hst_ack_top : std_logic                    := '0';
+   signal cmd_reg     : std_logic_vector(2 downto 0) := cmd_nop_c;
+   signal clear_regs  : std_logic                    := '0';
+   signal soft_reset  : std_logic                    := '0';
+
+   signal clk            : std_logic;
+   signal reset          : std_logic;
+   signal hard_reset     : std_logic;
+   signal hst_dv         : std_logic;
+   signal hst_ack_ctrl   : std_logic;
+   signal cmd            : std_logic_vector(2 downto 0);
+   signal adc_wr_en      : std_logic;
+   signal adc_spi_send   : std_logic;
+   signal adc_send_done  : std_logic;
+   signal local_we       : std_logic;
+   signal source         : std_logic;
+   signal trig_start_str : std_logic;
+   signal trig_stop_str  : std_logic;
+   signal trig_halt_str  : std_logic;
+
+
+
+
+   ---------------------------------------------------------------------------
+   --                        COMPONENT DECLARATIONS                         --
+   ---------------------------------------------------------------------------
+
+
+   component control_sm
+      port (
+         clk            : in  std_logic;
+         reset          : in  std_logic;
+         hst_dv         : in  std_logic;
+         hst_ack        : out std_logic;
+         cmd            : in  std_logic_vector(2 downto 0);
+         adc_wr_en      : out std_logic;
+         adc_spi_send   : out std_logic;
+         adc_send_done  : in  std_logic;
+         local_we       : out std_logic;
+         source         : out std_logic;
+         trig_start_str : out std_logic;
+         trig_stop_str  : out std_logic;
+         trig_halt_str  : out std_logic
+         );
+   end component;
+
+
+   component control_sm_vgen
+      port (
+         clk               : buffer std_logic;
+         reset_dly         : buffer std_logic;
+         hst_dv_dly        : buffer std_logic;
+         hst_ack           : in     std_logic;
+         cmd_dly           : buffer std_logic_vector(2 downto 0);
+         adc_wr_en         : in     std_logic;
+         adc_spi_send      : in     std_logic;
+         adc_send_done_dly : buffer std_logic;
+         local_we          : in     std_logic;
+         source            : in     std_logic;
+         trig_start_str    : in     std_logic;
+         trig_stop_str     : in     std_logic;
+         trig_halt_str     : in     std_logic
+         );
+   end component;
+
+
+
+begin
+   ---------------------------------------------------------------------------
+   --                    INSTANTIATE COMPONENTS                             --
+   ---------------------------------------------------------------------------
+
+
+   dut : control_sm
+      port map (
+         clk            => clk,
+         reset          => reset,
+         hst_dv         => hst_dv,
+         hst_ack        => hst_ack_ctrl,
+         cmd            => cmd,
+         adc_wr_en      => adc_wr_en,
+         adc_spi_send   => adc_spi_send,
+         adc_send_done  => adc_send_done,
+         local_we       => local_we,
+         source         => source,
+         trig_start_str => trig_start_str,
+         trig_stop_str  => trig_stop_str,
+         trig_halt_str  => trig_halt_str
+         );
+
+
+   vgen : control_sm_vgen
+      port map (
+         clk               => clk,
+         reset_dly         => hard_reset,
+         hst_dv_dly        => hst_dv,
+         hst_ack           => hst_ack,
+         cmd_dly           => cmd,
+         adc_wr_en         => adc_wr_en,
+         adc_spi_send      => adc_spi_send,
+         adc_send_done_dly => adc_send_done,
+         local_we          => local_we,
+         source            => source,
+         trig_start_str    => trig_start_str,
+         trig_stop_str     => trig_stop_str,
+         trig_halt_str     => trig_halt_str
+         );
+
+
+   ---------------------------------------------------------------------------
+   --                        CONCURRENT SIGNAL ASSIGNMENTS                  --
+   ---------------------------------------------------------------------------
+   hst_ack <= hst_ack_ctrl or hst_ack_top;
+   reset   <= hard_reset or soft_reset;
+
+
+   ---------------------------------------------------------------------------
+   --                         CONCURRENT PROCESSES                          --
+   ---------------------------------------------------------------------------
+   top_level_proc : process (clk)
+   begin
+      if rising_edge(clk) then
+
+         hst_dv_reg <= hst_dv;
+         cmd_reg    <= cmd;
+
+         -- decode reset and clear commands from host
+         case sm_state is
+            
+            when idle_st =>  -- only respond to reset or clear commands
+               soft_reset <= '0';
+               clear_regs <= '0';
+               if ((hst_dv_reg = '1') and ((cmd_reg = cmd_reset_c) or (cmd_reg = cmd_clear_err_c))) then
+                  hst_ack_top <= '1';
+                  sm_state    <= hst_ack_st;
+               else
+                  hst_ack_top <= '0';
+                  sm_state    <= idle_st;
+               end if;
+
+            when hst_ack_st =>
+               hst_ack_top <= '0';
+               sm_state    <= cmd_decode_st;
+
+            when cmd_decode_st =>
+               sm_state <= idle_st;
+               if (cmd_reg = cmd_reset_c) then
+                  clear_regs <= '0';
+                  soft_reset <= '1';
+               elsif (cmd_reg = cmd_clear_err_c) then
+                  clear_regs <= '1';
+                  soft_reset <= '0';
+               else
+                  clear_regs <= '0';
+                  soft_reset <= '0';
+               end if;
+
+            when others =>              -- unhandled states
+               clear_regs <= '0';
+               soft_reset <= '0';
+               sm_state   <= idle_st;
+
+         end case;
+         
+      end if;  -- if rising_edge(clk)
+   end process top_level_proc;
+
+
+end tben;
+-------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------
+--                         CONFIGURATION STATEMENT                           --
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------

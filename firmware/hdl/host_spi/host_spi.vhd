@@ -91,12 +91,15 @@ architecture rtl of host_spi is
    signal hst_dv_int    : std_logic                     := '0';
    signal hst_data      : std_logic_vector(37 downto 0) := (others => '0');
    signal sdo_data_en   : std_logic                     := '0';
+   signal sdo_int       : std_logic                     := '0';
 
    signal hst_din_latch   : std_logic_vector(31 downto 0) := (others => '0');
    signal first_bit       : std_logic                     := '0';
    signal first_bit_d1    : std_logic                     := '0';
    signal first_bit_pulse : std_logic;
    signal read_en         : std_logic                     := '0';
+   signal read_en_d1      : std_logic                     := '0';
+   signal read_en_pulse   : std_logic;
 
 
 
@@ -127,12 +130,14 @@ begin
 
    first_bit_pulse <= first_bit and not(first_bit_d1);
 
+   read_en_pulse <= read_en and not(read_en_d1);
+
    -- assign output signals
    hst_dv   <= hst_dv_int;
    cmd      <= hst_data(37 downto 35);
    addr     <= hst_data(34 downto 32);
    hst_dout <= hst_data(31 downto 0);
-   sdo      <= hst_din_latch(31);
+   sdo      <= sdo_int;
 
    ---------------------------------------------------------------------------
    --                         CONCURRENT PROCESSES                          --
@@ -166,6 +171,7 @@ begin
          -- generate the data transition edge for the out-going serial stream
          sdo_data_en <= cs_reg and sclk_rising;
 
+         -- de-serialise the incomming bit-stream
          bit_count_rst <= latch_din;
          if ((cs_rising = '1') or (reset_reg = '1')) then
             din_des <= (others => '0');
@@ -196,6 +202,7 @@ begin
          else
             read_en <= read_en;
          end if;
+         read_en_d1 <= read_en;
 
          -- host data valid and acknowledge generation logic
          if ((hst_ack_reg = '1') or (reset_reg = '1')) then
@@ -218,12 +225,21 @@ begin
          -- shift out serial data to host
          if ((cs_rising = '1') or (reset_reg = '1')) then
             hst_din_latch <= (others => '0');
-         elsif ((bit_count = std_logic_vector(to_unsigned(header_len_c, 6))) and (read_en = '1')) then
+         elsif (read_en_pulse = '1') then
             hst_din_latch <= hst_din;
-         elsif ((bit_count >= std_logic_vector(to_unsigned(data_start_c, 6))) and (read_en = '1') and (sdo_data_en = '1')) then
+         elsif ((bit_count >= std_logic_vector(to_unsigned(header_len_c, 6))) and (read_en = '1') and (sdo_data_en = '1')) then
             hst_din_latch <= hst_din_latch(30 downto 0) & '0';
          else
             hst_din_latch <= hst_din_latch;
+         end if;
+
+         -- clock out the serial data in the correct place in the read cycle
+         if ((cs_rising = '1') or (reset_reg = '1')) then
+            sdo_int <= '0';
+         elsif ((bit_count >= std_logic_vector(to_unsigned(header_len_c, 6))) and (sclk_rising = '1')) then
+            sdo_int <= hst_din_latch(31);
+         else
+            sdo_int <= sdo_int;
          end if;
 
          

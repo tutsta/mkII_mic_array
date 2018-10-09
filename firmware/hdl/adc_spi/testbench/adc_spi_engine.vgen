@@ -1,0 +1,201 @@
+
+-------------------------------------------------------------------------------
+-- Copyright 2018.
+-- CSIRO.
+-- All Rights Reserved.
+--  
+--
+--   File Name:      adc_spi_engine.vgen
+--   Type:           VGEN
+--   Designer:       J. Tuthill
+--   Created:        Sun Oct 07 18:31:56 2018
+--   Template Rev:   2.0
+--
+--   Title:          Vector gen for ADC SPI engine.
+--   Description: 
+--   
+--   
+--   
+--
+--   
+--   The following is updated by RCS/CVS.
+--   Modification History:
+--   $Log$
+--   
+--   
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+--  The following line is used by the testbench generator and the
+--  av-simulate function. 
+--  NOTE: The time can be changed from ns to; ps,ns,us,ms.
+--              TOTAL SIMULATION TIME (ns): 100 
+--                 generate_simulus_files = true
+--                 generate_capture_files = true
+--                   dont_touch_tben_file = false
+--                    dont_touch_cmd_file = false
+--  TRACE SIGNALS
+--  /ADC_SPI_ENGINE_TBEN/DUT/*
+--
+-------------------------------------------------------------------------------
+
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+
+-- Add user defined use clauses under here
+
+
+
+-------------------------------------------------------------------------------
+entity adc_spi_engine_vgen is
+   port (
+      spi_clk         : buffer std_logic;
+      reset_dly       : buffer std_logic;
+      adc_spi_rw_dly  : buffer std_logic;
+      adc_spi_rw_done : in     std_logic;
+      adc_wr_en_dly   : buffer std_logic;
+      cmd_addr_dly    : buffer std_logic_vector(6 downto 0);
+      adc_din_dly     : buffer std_logic_vector(7 downto 0);
+      adc_dout        : in     std_logic_vector(7 downto 0)
+      );
+end adc_spi_engine_vgen;
+
+-------------------------------------------------------------------------------
+architecture vgen of adc_spi_engine_vgen is
+
+   ---------------------------------------------------------------------------
+   --                 CONSTANT, TYPE AND GENERIC DEFINITIONS                --
+   ---------------------------------------------------------------------------
+   ---------------------------------------------------------------------------
+   --  The INP_DELAY constants correspond to tester timing groups. Edit to
+   --  change INP_DELAY values from the examples below. Delete the unused
+   --  INP_DELAY constants.
+   ---------------------------------------------------------------------------
+
+   constant inp_delay : time := 3.0 ns;
+
+   constant main_clock_half_period : time := 10 ns;
+
+   ---------------------------------------------------------------------------
+   --                          SIGNAL DECLARATIONS                          --
+   ---------------------------------------------------------------------------
+   signal reset      : std_logic;
+   signal adc_spi_rw : std_logic;
+   signal adc_wr_en  : std_logic;
+   signal cmd_addr   : std_logic_vector(6 downto 0);
+   signal adc_din    : std_logic_vector(7 downto 0);
+
+
+   ---------------------------------------------------------------------------
+   --                        COMPONENT DECLARATIONS                         --
+   ---------------------------------------------------------------------------
+
+
+begin
+   ---------------------------------------------------------------------------
+   --                    INSTANTIATE COMPONENTS                             --
+   ---------------------------------------------------------------------------
+
+   ---------------------------------------------------------------------------
+   --                    CONCURRENT SIGNAL ASSIGNMENTS                      --
+   ---------------------------------------------------------------------------
+   ---------------------------------------------------------------------------
+   --  Use the timing groups above to assign DUT input delays with respect to
+   --  the clock. Use these to test for Setup/Hold timing violations.
+   ---------------------------------------------------------------------------
+
+   reset_dly      <= reset      after inp_delay;
+   adc_spi_rw_dly <= adc_spi_rw after inp_delay;
+   adc_wr_en_dly  <= adc_wr_en  after inp_delay;
+   cmd_addr_dly   <= cmd_addr   after inp_delay;
+   adc_din_dly    <= adc_din    after inp_delay;
+
+
+   ---------------------------------------------------------------------------
+   --                         CONCURRENT PROCESSES                          --
+   ---------------------------------------------------------------------------
+
+
+   ---------------------------------------------------------------------------
+   --  Process:       MAIN_CLOCK_GEN 
+   --  Timing Domain: MAIN
+   --  Purpose:       Generates Clock Waveform.
+   --  Outputs:       spi_clk 
+   --  (The following is used by av-testbench for signals in the vpat file.)
+   --  Signals in this time domain:
+   --       adc_spi_rw_done
+   --       adc_dout
+   ---------------------------------------------------------------------------
+   main_clock_gen : process
+   begin
+      spi_clk <= '0';
+      --  Wait for the initial start up time. 
+      --  (You can edit the times below; Constants maybe used.)
+      wait for main_clock_half_period;
+
+      endless : loop
+         spi_clk <= '1';
+         wait for main_clock_half_period;
+         spi_clk <= '0';
+         wait for main_clock_half_period;
+      end loop;
+
+   end process main_clock_gen;
+
+
+
+
+   ---------------------------------------------------------------------------
+   --  Process:  DRIVER
+   --  Purpose:  To drive the output signals of the vector generator.
+   --  Inputs:   Feedback from the DUT.
+   --  Outputs:  Inputs to DUT.
+   ---------------------------------------------------------------------------
+
+
+   driver : process
+
+   begin
+      -----------------------------------------------------------------------
+      --  Put your test vectors here!
+      -----------------------------------------------------------------------
+      wait until (spi_clk'event and spi_clk = '1');
+      reset      <= '0';
+      adc_spi_rw <= '0';
+      adc_wr_en  <= '0';
+      cmd_addr   <= "0000000";
+      adc_din    <= "00000000";
+      wait until (spi_clk'event and spi_clk = '1');
+      wait until (spi_clk'event and spi_clk = '1');
+      wait until (spi_clk'event and spi_clk = '1');
+      wait until (spi_clk'event and spi_clk = '1');
+      adc_spi_rw <= '1';
+      adc_wr_en  <= '1';
+      cmd_addr   <= "0101010";
+
+      for i in 1 to 50 loop
+         wait until (spi_clk'event and spi_clk = '1');
+      end loop;
+      adc_spi_rw <= '0';
+      adc_wr_en  <= '0';
+      cmd_addr   <= "0000000";
+
+      for i in 1 to 50 loop
+         wait until (spi_clk'event and spi_clk = '1');
+      end loop;
+      adc_spi_rw <= '1';
+      adc_wr_en  <= '0';
+      cmd_addr   <= "1010101";
+
+      endless : loop
+         wait until (spi_clk'event and spi_clk = '1');
+      end loop;
+
+
+   end process driver;
+
+end vgen;
+

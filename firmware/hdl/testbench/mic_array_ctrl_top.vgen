@@ -1,0 +1,345 @@
+
+-------------------------------------------------------------------------------
+-- Copyright 2018.
+-- CSIRO.
+-- All Rights Reserved.
+--  
+--
+--   File Name:      mic_array_ctrl_top.vgen
+--   Type:           VGEN
+--   Designer:       J. Tuthill
+--   Created:        Sat May 12 17:57:49 2018
+--   Template Rev:   2.0
+--
+--   Title:          Top-level testbench vector generator.
+--   Description: 
+--   
+--   
+--   
+--   
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+--  The following line is used by the testbench generator and the
+--  av-simulate function. 
+--  NOTE: The time can be changed from ns to; ps,ns,us,ms.
+--              TOTAL SIMULATION TIME (ns): 100 
+--                 generate_simulus_files = true
+--                 generate_capture_files = true
+--                   dont_touch_tben_file = false
+--                    dont_touch_cmd_file = false
+--  TRACE SIGNALS
+--  /MIC_ARRAY_CTRL_TOP_TBEN/DUT/*
+--
+-------------------------------------------------------------------------------
+
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+
+
+-- Add user defined use clauses under here
+
+
+
+-------------------------------------------------------------------------------
+entity mic_array_ctrl_top_vgen is
+   port (
+      clk             : buffer std_logic;
+      reset_dly       : buffer std_logic;
+      host_cs_l_dly   : buffer std_logic;
+      host_sclk       : buffer std_logic;
+      host_sdi_dly    : buffer std_logic;
+      host_sdo        : in     std_logic;
+      host_usb_data   : in     std_logic_vector(7 downto 0);
+      host_wr_l       : in     std_logic;
+      host_rd_l       : in     std_logic;
+      host_si_wua     : in     std_logic;
+      adc_sclk        : in     std_logic;
+      adc_cs_a        : in     std_logic;
+      adc_cs_b        : in     std_logic;
+      adc_dout_dly    : buffer std_logic;
+      adc_din         : in     std_logic;
+      adc_drdy_dly    : buffer std_logic;
+      adc_fault_a_dly : buffer std_logic;
+      adc_fault_b_dly : buffer std_logic;
+      adc_ovflw_a_dly : buffer std_logic;
+      adc_ovflw_b_dly : buffer std_logic
+      );
+end mic_array_ctrl_top_vgen;
+
+-------------------------------------------------------------------------------
+architecture vgen of mic_array_ctrl_top_vgen is
+
+   ---------------------------------------------------------------------------
+   --                 CONSTANT, TYPE AND GENERIC DEFINITIONS                --
+   ---------------------------------------------------------------------------
+   ---------------------------------------------------------------------------
+   --  The INP_DELAY constants correspond to tester timing groups. Edit to
+   --  change INP_DELAY values from the examples below. Delete the unused
+   --  INP_DELAY constants.
+   ---------------------------------------------------------------------------
+
+   constant inp_delay : time := 3.0 ns;
+
+   constant main_clock_half_period   : time := 10 ns;
+   constant serial_clock_half_period : time := 105 ns;
+
+   -- SPI constants
+   constant cmd_len_c  : integer := 3;
+   constant addr_len_c : integer := 3;
+   constant data_len_c : integer := 32;
+
+   ---------------------------------------------------------------------------
+   --                          SIGNAL DECLARATIONS                          --
+   ---------------------------------------------------------------------------
+   signal ser_clk     : std_logic;      -- SPI serial clock
+   signal reset       : std_logic;
+   signal host_sclk   : std_logic := '1';
+   signal host_cs_l   : std_logic := '1';
+   signal host_sdi    : std_logic := '0';
+   signal adc_dout    : std_logic;
+   signal adc_drdy    : std_logic;
+   signal adc_fault_a : std_logic;
+   signal adc_fault_b : std_logic;
+   signal adc_ovflw_a : std_logic;
+   signal adc_ovflw_b : std_logic;
+
+
+
+   signal zero_data : std_logic_vector(data_len_c-1 downto 0) := (others => '0');
+   signal rx_data   : std_logic_vector(data_len_c-1 downto 0) := (others => '0');
+   ---------------------------------------------------------------------------
+   --                        COMPONENT DECLARATIONS                         --
+   ---------------------------------------------------------------------------
+
+
+begin
+   ---------------------------------------------------------------------------
+   --                    INSTANTIATE COMPONENTS                             --
+   ---------------------------------------------------------------------------
+
+   ---------------------------------------------------------------------------
+   --                    CONCURRENT SIGNAL ASSIGNMENTS                      --
+   ---------------------------------------------------------------------------
+   ---------------------------------------------------------------------------
+   --  Use the timing groups above to assign DUT input delays with respect to
+   --  the clock. Use these to test for Setup/Hold timing violations.
+   ---------------------------------------------------------------------------
+
+   reset_dly       <= reset       after inp_delay;
+   host_cs_l_dly   <= host_cs_l   after inp_delay;
+   host_sdi_dly    <= host_sdi    after inp_delay;
+   adc_dout_dly    <= adc_dout    after inp_delay;
+   adc_drdy_dly    <= adc_drdy    after inp_delay;
+   adc_fault_a_dly <= adc_fault_a after inp_delay;
+   adc_fault_b_dly <= adc_fault_b after inp_delay;
+   adc_ovflw_a_dly <= adc_ovflw_a after inp_delay;
+   adc_ovflw_b_dly <= adc_ovflw_b after inp_delay;
+
+
+   ---------------------------------------------------------------------------
+   --                         CONCURRENT PROCESSES                          --
+   ---------------------------------------------------------------------------
+
+
+   ---------------------------------------------------------------------------
+   --  Process:       MAIN_CLOCK_GEN 
+   --  Timing Domain: MAIN
+   --  Purpose:       Generates Clock Waveform.
+   --  Outputs:       CLK 
+   --  (The following is used by av-testbench for signals in the vpat file.)
+   --  Signals in this time domain:
+   --       host_sdo
+   --       host_usb_data
+   --       host_wr_l
+   --       host_rd_l
+   --       host_si_wua
+   --       adc_host_sclk
+   --       adc_cs_a
+   --       adc_cs_b
+   --       adc_din
+   ---------------------------------------------------------------------------
+   main_clock_gen : process
+   begin
+      clk <= '0';
+      --  Wait for the initial start up time. 
+      --  (You can edit the times below; Constants maybe used.)
+      wait for main_clock_half_period;
+
+      endless : loop
+         clk <= '1';
+         wait for main_clock_half_period;
+         clk <= '0';
+         wait for main_clock_half_period;
+      end loop;
+
+   end process main_clock_gen;
+
+   ---------------------------------------------------------------------------
+   --  Process:       SERIAL_CLOCK_GEN 
+   --  Timing Domain: SERIAL CLOCK
+   --  Purpose:       Generates Serial Clock Waveform.
+   --  Outputs:       SRE_CLK 
+   ---------------------------------------------------------------------------
+   serial_clock_gen : process
+   begin
+      ser_clk <= '0';
+      wait for serial_clock_half_period;
+
+      endless : loop
+         ser_clk <= '1';
+         wait for serial_clock_half_period;
+         ser_clk <= '0';
+         wait for serial_clock_half_period;
+      end loop;
+
+   end process serial_clock_gen;
+
+
+   ---------------------------------------------------------------------------
+   --  Process:  DRIVER
+   --  Purpose:  To drive the output signals of the vector generator.
+   --  Inputs:   Feedback from the DUT.
+   --  Outputs:  Inputs to DUT.
+   ---------------------------------------------------------------------------
+
+
+   driver : process
+      
+      procedure spi_write(cmd  : std_logic_vector(cmd_len_c-1 downto 0);
+                          addr : std_logic_vector(addr_len_c-1 downto 0);
+                          data : std_logic_vector(data_len_c-1 downto 0)) is
+      begin
+         wait until (ser_clk'event and ser_clk = '1');
+         host_cs_l <= '1';
+         host_sclk <= '1';
+         wait until (ser_clk'event and ser_clk = '1');
+         host_cs_l <= '0';
+         sdi       <= '0';              -- set first bit to zero for a write
+         wait until (ser_clk'event and ser_clk = '1');
+         host_sclk <= '0';
+         -- send command
+         cmd_loop : for i in 0 to (cmd_len_c-1) loop
+            wait until (ser_clk'event and ser_clk = '1');
+            host_sclk <= '1';
+            sdi       <= cmd((cmd_len_c-1)-i);
+            wait until (ser_clk'event and ser_clk = '1');
+            host_sclk <= '0';
+         end loop cmd_loop;
+         -- send address
+         addr_loop : for i in 0 to (addr_len_c-1) loop
+            wait until (ser_clk'event and ser_clk = '1');
+            host_sclk <= '1';
+            sdi       <= addr((addr_len_c-1)-i);
+            wait until (ser_clk'event and ser_clk = '1');
+            host_sclk <= '0';
+         end loop addr_loop;
+         -- wait two serial data clocks before sending the data
+         wait until (ser_clk'event and ser_clk = '1');
+         wait until (ser_clk'event and ser_clk = '1');
+         wait until (ser_clk'event and ser_clk = '1');
+         wait until (ser_clk'event and ser_clk = '1');
+         -- transmit the data
+         data_loop : for i in 0 to (data_len_c-1) loop
+            wait until (ser_clk'event and ser_clk = '1');
+            host_sclk <= '1';
+            sdi       <= data((data_len_c-1)-i);
+            wait until (ser_clk'event and ser_clk = '1');
+            host_sclk <= '0';
+         end loop data_loop;
+         wait until (ser_clk'event and ser_clk = '1');
+         host_sclk <= '1';
+         wait until (ser_clk'event and ser_clk = '1');
+         host_cs_l <= '1';
+      end;
+
+   procedure spi_read
+      (cmd  : std_logic_vector(cmd_len_c-1 downto 0);
+       addr : std_logic_vector(addr_len_c-1 downto 0)) is
+   begin
+      wait until (ser_clk'event and ser_clk = '1');
+      host_cs_l <= '1';
+      host_sclk <= '1';
+      wait until (ser_clk'event and ser_clk = '1');
+      host_cs_l <= '0';
+      sdi       <= '1';                 -- set first bit to one for a read
+      wait until (ser_clk'event and ser_clk = '1');
+      host_sclk <= '0';
+      -- wait for command period (no command needed for read)
+      cmd_loop : for i in 0 to (cmd_len_c-1) loop
+         wait until (ser_clk'event and ser_clk = '1');
+         host_sclk <= '1';
+         wait until (ser_clk'event and ser_clk = '1');
+         host_sclk <= '0';
+      end loop cmd_loop;
+      -- wait for address period (no address needed for read)
+      addr_loop : for i in 0 to (addr_len_c-1) loop
+         wait until (ser_clk'event and ser_clk = '1');
+         host_sclk <= '1';
+         wait until (ser_clk'event and ser_clk = '1');
+         host_sclk <= '0';
+      end loop addr_loop;
+      sdi <= '0';
+      -- wait two serial data clocks before sending the data
+      wait until (ser_clk'event and ser_clk = '1');
+      wait until (ser_clk'event and ser_clk = '1');
+      wait until (ser_clk'event and ser_clk = '1');
+      wait until (ser_clk'event and ser_clk = '1');
+      -- transmit the data
+      data_loop : for i in 0 to (data_len_c-1) loop
+         wait until (ser_clk'event and ser_clk = '1');
+         host_sclk <= '1';
+         -- sample the in-comming data on the falling edge of ser_clk
+         wait until (ser_clk'event and ser_clk = '0');
+         rx_data   <= rx_data(data_len_c-2 downto 0) & host_sdo;
+         wait until (ser_clk'event and ser_clk = '1');
+         host_sclk <= '0';
+      end loop data_loop;
+      wait until (ser_clk'event and ser_clk = '1');
+      host_sclk <= '1';
+      wait until (ser_clk'event and ser_clk = '1');
+      host_cs_l <= '1';
+   end;
+
+   begin
+      -----------------------------------------------------------------------
+      --  Put your test vectors here!
+      -----------------------------------------------------------------------
+      wait until (clk'event and clk = '1');
+      reset       <= '1';
+      adc_dout    <= '0';
+      adc_drdy    <= '0';
+      adc_fault_a <= '0';
+      adc_fault_b <= '0';
+      adc_ovflw_a <= '0';
+      adc_ovflw_b <= '0';
+
+      for i in 0 to 9 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+      reset <= '0';
+
+      for i in 0 to 100 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+
+      spi_write("101", "001", x"A5A5E2E2");
+--      spi_write("101", "001", x"00000001");
+
+      for i in 0 to 100 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+
+      spi_write("110", "011", x"12345678");
+--      spi_read("110", "011");
+
+      endless : loop
+         wait until (clk'event and clk = '1');
+      end loop;
+
+
+   end process driver;
+
+end vgen;

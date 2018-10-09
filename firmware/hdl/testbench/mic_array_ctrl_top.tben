@@ -1,0 +1,211 @@
+
+-------------------------------------------------------------------------------
+-- Copyright 2018.
+-- CSIRO.
+-- All Rights Reserved.
+--  
+--
+--   File Name:      mic_array_ctrl_top.tben
+--   Type:           TBEN
+--   Designer:       J. Tuthill
+--   Created:        Sat May 12 17:57:54 2018
+--   Template Rev:   2.0
+--
+--   Title:          Testbench for MIC_ARRAY_CTRL_TOP.
+--   Description:
+--              This file was automatically generated.
+--              Do not edit!
+--   
+--   
+--   
+--   
+--
+-- 
+-------------------------------------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+
+
+
+use std.textio.all;                     -- Text Input/Output.
+
+
+-- User defined use clauses
+
+
+
+
+-------------------------------------------------------------------------------
+entity mic_array_ctrl_top_tben is
+
+end mic_array_ctrl_top_tben;
+
+-------------------------------------------------------------------------------
+architecture tben of mic_array_ctrl_top_tben is
+
+   ---------------------------------------------------------------------------
+   --                          CONSTANT DECLARATIONS                        --
+   ---------------------------------------------------------------------------
+
+
+   ---------------------------------------------------------------------------
+   --                          SIGNAL DECLARATIONS                          --
+   ---------------------------------------------------------------------------
+   signal clk           : std_logic;
+   signal reset         : std_logic;
+   signal host_cs_l     : std_logic;
+   signal host_sclk     : std_logic;
+   signal host_sdi      : std_logic;
+   signal host_sdo      : std_logic;
+   signal host_usb_data : std_logic_vector(7 downto 0);
+   signal host_wr_l     : std_logic;
+   signal host_rd_l     : std_logic;
+   signal host_si_wua   : std_logic;
+   signal adc_sclk      : std_logic;
+   signal adc_cs_a      : std_logic;
+   signal adc_cs_b      : std_logic;
+   signal adc_dout      : std_logic;
+   signal adc_din       : std_logic;
+   signal adc_drdy      : std_logic;
+   signal adc_fault_a   : std_logic;
+   signal adc_fault_b   : std_logic;
+   signal adc_ovflw_a   : std_logic;
+   signal adc_ovflw_b   : std_logic;
+
+
+
+
+   ---------------------------------------------------------------------------
+   --                        COMPONENT DECLARATIONS                         --
+   ---------------------------------------------------------------------------
+
+
+   component mic_array_ctrl_top
+      port (
+         clk           : in  std_logic;
+         reset         : in  std_logic;
+         host_cs_l     : in  std_logic;
+         host_sclk     : in  std_logic;
+         host_sdi      : in  std_logic;
+         host_sdo      : out std_logic;
+         host_usb_data : out std_logic_vector(7 downto 0);
+         host_wr_l     : out std_logic;
+         host_rd_l     : out std_logic;
+         host_si_wua   : out std_logic;
+         adc_sclk      : out std_logic;
+         adc_cs_a      : out std_logic;
+         adc_cs_b      : out std_logic;
+         adc_dout      : in  std_logic;
+         adc_din       : out std_logic;
+         adc_drdy      : in  std_logic;
+         adc_fault_a   : in  std_logic;
+         adc_fault_b   : in  std_logic;
+         adc_ovflw_a   : in  std_logic;
+         adc_ovflw_b   : in  std_logic
+         );
+   end component;
+
+
+   component mic_array_ctrl_top_vgen
+      port (
+         clk             : buffer std_logic;
+         reset_dly       : buffer std_logic;
+         host_cs_l_dly   : buffer std_logic;
+         host_sclk       : buffer std_logic;
+         host_sdi_dly    : buffer std_logic;
+         host_sdo        : in     std_logic;
+         host_usb_data   : in     std_logic_vector(7 downto 0);
+         host_wr_l       : in     std_logic;
+         host_rd_l       : in     std_logic;
+         host_si_wua     : in     std_logic;
+         adc_sclk        : in     std_logic;
+         adc_cs_a        : in     std_logic;
+         adc_cs_b        : in     std_logic;
+         adc_dout_dly    : buffer std_logic;
+         adc_din         : in     std_logic;
+         adc_drdy_dly    : buffer std_logic;
+         adc_fault_a_dly : buffer std_logic;
+         adc_fault_b_dly : buffer std_logic;
+         adc_ovflw_a_dly : buffer std_logic;
+         adc_ovflw_b_dly : buffer std_logic
+         );
+   end component;
+
+
+
+begin
+   ---------------------------------------------------------------------------
+   --                    INSTANTIATE COMPONENTS                             --
+   ---------------------------------------------------------------------------
+
+
+   dut : mic_array_ctrl_top
+      port map (
+         clk           => clk,
+         reset         => reset,
+         host_cs_l     => host_cs_l,
+         host_sclk     => host_sclk,
+         host_sdi      => host_sdi,
+         host_sdo      => host_sdo,
+         host_usb_data => host_usb_data,
+         host_wr_l     => host_wr_l,
+         host_rd_l     => host_rd_l,
+         host_si_wua   => host_si_wua,
+         adc_sclk      => adc_sclk,
+         adc_cs_a      => adc_cs_a,
+         adc_cs_b      => adc_cs_b,
+         adc_dout      => adc_dout,
+         adc_din       => adc_din,
+         adc_drdy      => adc_drdy,
+         adc_fault_a   => adc_fault_a,
+         adc_fault_b   => adc_fault_b,
+         adc_ovflw_a   => adc_ovflw_a,
+         adc_ovflw_b   => adc_ovflw_b
+         );
+
+
+   vgen : mic_array_ctrl_top_vgen
+      port map (
+         clk             => clk,
+         reset_dly       => reset,
+         host_cs_l_dly   => host_cs_l,
+         host_sclk       => host_sclk,
+         host_sdi_dly    => host_sdi,
+         host_sdo        => host_sdo,
+         host_usb_data   => host_usb_data,
+         host_wr_l       => host_wr_l,
+         host_rd_l       => host_rd_l,
+         host_si_wua     => host_si_wua,
+         adc_sclk        => adc_sclk,
+         adc_cs_a        => adc_cs_a,
+         adc_cs_b        => adc_cs_b,
+         adc_dout_dly    => adc_dout,
+         adc_din         => adc_din,
+         adc_drdy_dly    => adc_drdy,
+         adc_fault_a_dly => adc_fault_a,
+         adc_fault_b_dly => adc_fault_b,
+         adc_ovflw_a_dly => adc_ovflw_a,
+         adc_ovflw_b_dly => adc_ovflw_b
+         );
+
+
+   ---------------------------------------------------------------------------
+   --                        CONCURRENT SIGNAL ASSIGNMENTS                  --
+   ---------------------------------------------------------------------------
+
+
+   ---------------------------------------------------------------------------
+   --                         CONCURRENT PROCESSES                          --
+   ---------------------------------------------------------------------------
+
+   --  ** Start of file processes ** --
+
+
+
+
+   --  ** End of file processes ** --
+
+
+end tben;
+-------------------------------------------------------------------------------
