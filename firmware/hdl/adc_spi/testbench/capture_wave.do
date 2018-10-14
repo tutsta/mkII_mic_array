@@ -8,8 +8,13 @@ add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/adc_spi_rw
 add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/adc_spi_rw_done
 add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/adc_wr_en
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_engine_tben/cmd_addr
+add wave -noupdate -format Logic -radix unsigned /adc_spi_engine_tben/byte_cnt
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_engine_tben/adc_din
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_engine_tben/adc_dout
+add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/adc_spi_cs
+add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/adc_spi_sclk
+add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/adc_spi_dout
+add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/adc_spi_din
 
 add wave -noupdate -divider {DUT INTERNAL SIGNALS}
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_engine_tben/dut/s_sm_state
@@ -19,12 +24,14 @@ add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_adc_sp
 add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_adc_spi_rw_pulse
 add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_adc_wr_en
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_engine_tben/dut/s_cmd_addr
+add wave -noupdate -format Logic -radix unsigned /adc_spi_engine_tben/dut/s_byte_cnt_reg
+add wave -noupdate -format Logic -radix unsigned /adc_spi_engine_tben/dut/s_byte_cnt_l
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_engine_tben/dut/s_adc_din
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_engine_tben/dut/s_cmd_addr_l
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_engine_tben/dut/s_adc_din_l
 add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_cs_l
 add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_sclk
-add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_adc_dout
+add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_adc_spi_dout
 add wave -noupdate -format Logic -radix unsigned /adc_spi_engine_tben/dut/s_cmd_addr_seq_cnt
 add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_cmd_addr_seq_cnt_en
 add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_sclk_en

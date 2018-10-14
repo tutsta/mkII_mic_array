@@ -42,6 +42,7 @@ entity adc_spi_engine is
       adc_spi_rw_done : out std_logic;
       adc_wr_en       : in  std_logic;
       cmd_addr        : in  std_logic_vector(6 downto 0);
+      byte_cnt        : in  std_logic_vector(4 downto 0);  -- number of bythes to transfer - 1
       adc_din         : in  std_logic_vector(7 downto 0);
       adc_dout        : out std_logic_vector(7 downto 0);
 
@@ -70,12 +71,11 @@ architecture rtl of adc_spi_engine is
                         deassert_cs_st);    --06
 
 
-   constant c_bytes      : unsigned(4 downto 0) := "00001";
    ---------------------------------------------------------------------------
    --                          SIGNAL DECLARATIONS                          --
    ---------------------------------------------------------------------------
    -- State Machine
-   signal s_sm_state     : sm_states_t          := idle_st;
+   signal s_sm_state     : sm_states_t := idle_st;
    signal s_state_decode : std_logic_vector(2 downto 0);
 
    signal s_adc_spi_rw       : std_logic                    := '0';
@@ -85,6 +85,8 @@ architecture rtl of adc_spi_engine is
    signal s_cmd_addr         : std_logic_vector(6 downto 0) := "0000000";
    signal s_adc_din          : std_logic_vector(7 downto 0) := (others => '0');
    signal s_cmd_addr_l       : std_logic_vector(7 downto 0) := "00000000";
+   signal s_byte_cnt_reg     : std_logic_vector(4 downto 0) := "00000";
+   signal s_byte_cnt_l       : unsigned(4 downto 0)         := "00000";
    signal s_adc_din_l        : std_logic_vector(7 downto 0) := "00000000";
 
    -- spi interface signals
@@ -123,6 +125,12 @@ begin
    -- rising edge detect on adc_spi_rw
    s_adc_spi_rw_pulse <= s_adc_spi_rw and not(s_adc_spi_rw_d);
 
+   -- assign SPI output signals
+   adc_spi_cs   <= s_cs_l;
+   adc_spi_sclk <= s_sclk;
+   adc_spi_dout <= s_adc_spi_dout;
+
+
    -- debug - decode the state machine current state
    s_state_decode <= "000" when s_sm_state = idle_st else
                      "001" when s_sm_state = assert_cs_st else
@@ -152,11 +160,13 @@ begin
          s_adc_spi_rw_d <= s_adc_spi_rw;
          s_adc_wr_en    <= adc_wr_en;
          s_cmd_addr     <= cmd_addr;
+         s_byte_cnt_reg <= byte_cnt;
          s_adc_din      <= adc_din;
 
          -- latch cmd/addr and data and reset the byte counter
          if ((s_adc_spi_rw_pulse = '1') and (s_sm_state = idle_st)) then
             s_cmd_addr_l <= s_adc_wr_en & s_cmd_addr;
+            s_byte_cnt_l <= unsigned(s_byte_cnt_reg);
             s_adc_din_l  <= s_adc_din;
             s_byte_cnt   <= (others => '0');
          end if;
@@ -193,8 +203,10 @@ begin
          end if;
 
          -- generate serial data out
-         if (s_sm_state = wait_for_data_st) then
-            s_adc_spi_dout <= s_adc_din_l(7);
+         if (((s_sm_state = rw_data_byte_st) or (s_sm_state = check_byte_cnt_st)) and (s_cmd_addr_seq_cnt(0) = '0')) then
+            s_adc_spi_dout          <= s_adc_din_l(7);
+            s_adc_din_l(7 downto 1) <= s_adc_din_l(6 downto 0);
+            s_adc_din_l(0)          <= '0';
          end if;
 
          case s_sm_state is
@@ -248,7 +260,7 @@ begin
                
             when check_byte_cnt_st =>
                s_inc_byte_cnt <= '0';
-               if s_byte_cnt = c_bytes then
+               if s_byte_cnt = s_byte_cnt_l then
                   s_sm_state <= deassert_cs_st;
                else
                   s_sm_state <= rw_data_byte_st;

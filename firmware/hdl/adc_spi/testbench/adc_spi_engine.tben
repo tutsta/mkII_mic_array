@@ -61,10 +61,13 @@ architecture tben of adc_spi_engine_tben is
    signal adc_spi_rw_done : std_logic;
    signal adc_wr_en       : std_logic;
    signal cmd_addr        : std_logic_vector(6 downto 0);
+   signal byte_cnt        : std_logic_vector(4 downto 0);
    signal adc_din         : std_logic_vector(7 downto 0);
    signal adc_dout        : std_logic_vector(7 downto 0);
-
-
+   signal adc_spi_cs      : std_logic;
+   signal adc_spi_sclk    : std_logic;
+   signal adc_spi_dout    : std_logic;
+   signal adc_spi_din     : std_logic;
 
 
    ---------------------------------------------------------------------------
@@ -80,9 +83,13 @@ architecture tben of adc_spi_engine_tben is
          adc_spi_rw_done : out std_logic;
          adc_wr_en       : in  std_logic;
          cmd_addr        : in  std_logic_vector(6 downto 0);
+         byte_cnt        : in  std_logic_vector(4 downto 0);
          adc_din         : in  std_logic_vector(7 downto 0);
-         adc_dout        : out std_logic_vector(7 downto 0)
-         );
+         adc_dout        : out std_logic_vector(7 downto 0);
+         adc_spi_cs      : out std_logic;
+         adc_spi_sclk    : out std_logic;
+         adc_spi_dout    : out std_logic;
+         adc_spi_din     : in  std_logic);
    end component;
 
 
@@ -92,10 +99,15 @@ architecture tben of adc_spi_engine_tben is
          reset_dly       : buffer std_logic;
          adc_spi_rw_dly  : buffer std_logic;
          adc_spi_rw_done : in     std_logic;
+         byte_cnt_dly    : buffer std_logic_vector(4 downto 0);
          adc_wr_en_dly   : buffer std_logic;
          cmd_addr_dly    : buffer std_logic_vector(6 downto 0);
          adc_din_dly     : buffer std_logic_vector(7 downto 0);
-         adc_dout        : in     std_logic_vector(7 downto 0)
+         adc_dout        : in     std_logic_vector(7 downto 0);
+         adc_spi_cs      : in     std_logic;
+         adc_spi_sclk    : in     std_logic;
+         adc_spi_dout    : in     std_logic;
+         adc_spi_din_dly : buffer std_logic
          );
    end component;
 
@@ -105,8 +117,6 @@ begin
    ---------------------------------------------------------------------------
    --                    INSTANTIATE COMPONENTS                             --
    ---------------------------------------------------------------------------
-
-
    dut : adc_spi_engine
       port map (
          spi_clk         => spi_clk,
@@ -115,9 +125,14 @@ begin
          adc_spi_rw_done => adc_spi_rw_done,
          adc_wr_en       => adc_wr_en,
          cmd_addr        => cmd_addr,
+         byte_cnt        => byte_cnt,
          adc_din         => adc_din,
-         adc_dout        => adc_dout
-         );
+         adc_dout        => adc_dout,
+         adc_spi_cs      => adc_spi_cs,
+         adc_spi_sclk    => adc_spi_sclk,
+         adc_spi_dout    => adc_spi_dout,
+         adc_spi_din     => adc_spi_din);
+
 
 
    vgen : adc_spi_engine_vgen
@@ -128,8 +143,13 @@ begin
          adc_spi_rw_done => adc_spi_rw_done,
          adc_wr_en_dly   => adc_wr_en,
          cmd_addr_dly    => cmd_addr,
+         byte_cnt_dly    => byte_cnt,
          adc_din_dly     => adc_din,
-         adc_dout        => adc_dout
+         adc_dout        => adc_dout,
+         adc_spi_cs      => adc_spi_cs,
+         adc_spi_sclk    => adc_spi_sclk,
+         adc_spi_dout    => adc_spi_dout,
+         adc_spi_din_dly => adc_spi_din
          );
 
 

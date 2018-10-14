@@ -58,8 +58,13 @@ entity adc_spi_engine_vgen is
       adc_spi_rw_done : in     std_logic;
       adc_wr_en_dly   : buffer std_logic;
       cmd_addr_dly    : buffer std_logic_vector(6 downto 0);
+      byte_cnt_dly    : buffer std_logic_vector(4 downto 0);
       adc_din_dly     : buffer std_logic_vector(7 downto 0);
-      adc_dout        : in     std_logic_vector(7 downto 0)
+      adc_dout        : in     std_logic_vector(7 downto 0);
+      adc_spi_cs      : in     std_logic;
+      adc_spi_sclk    : in     std_logic;
+      adc_spi_dout    : in     std_logic;
+      adc_spi_din_dly : buffer std_logic
       );
 end adc_spi_engine_vgen;
 
@@ -82,11 +87,13 @@ architecture vgen of adc_spi_engine_vgen is
    ---------------------------------------------------------------------------
    --                          SIGNAL DECLARATIONS                          --
    ---------------------------------------------------------------------------
-   signal reset      : std_logic;
-   signal adc_spi_rw : std_logic;
-   signal adc_wr_en  : std_logic;
-   signal cmd_addr   : std_logic_vector(6 downto 0);
-   signal adc_din    : std_logic_vector(7 downto 0);
+   signal reset       : std_logic;
+   signal adc_spi_rw  : std_logic;
+   signal adc_wr_en   : std_logic;
+   signal cmd_addr    : std_logic_vector(6 downto 0);
+   signal byte_cnt    : std_logic_vector(4 downto 0);
+   signal adc_din     : std_logic_vector(7 downto 0);
+   signal adc_spi_din : std_logic;
 
 
    ---------------------------------------------------------------------------
@@ -107,11 +114,13 @@ begin
    --  the clock. Use these to test for Setup/Hold timing violations.
    ---------------------------------------------------------------------------
 
-   reset_dly      <= reset      after inp_delay;
-   adc_spi_rw_dly <= adc_spi_rw after inp_delay;
-   adc_wr_en_dly  <= adc_wr_en  after inp_delay;
-   cmd_addr_dly   <= cmd_addr   after inp_delay;
-   adc_din_dly    <= adc_din    after inp_delay;
+   reset_dly       <= reset       after inp_delay;
+   adc_spi_rw_dly  <= adc_spi_rw  after inp_delay;
+   adc_wr_en_dly   <= adc_wr_en   after inp_delay;
+   cmd_addr_dly    <= cmd_addr    after inp_delay;
+   byte_cnt_dly    <= byte_cnt    after inp_delay;
+   adc_din_dly     <= adc_din     after inp_delay;
+   adc_spi_din_dly <= adc_spi_din after inp_delay;
 
 
    ---------------------------------------------------------------------------
@@ -163,18 +172,22 @@ begin
       --  Put your test vectors here!
       -----------------------------------------------------------------------
       wait until (spi_clk'event and spi_clk = '1');
-      reset      <= '0';
-      adc_spi_rw <= '0';
-      adc_wr_en  <= '0';
-      cmd_addr   <= "0000000";
-      adc_din    <= "00000000";
+      reset       <= '0';
+      adc_spi_rw  <= '0';
+      adc_wr_en   <= '0';
+      cmd_addr    <= "0000000";
+      byte_cnt    <= "00000";
+      adc_din     <= "00000000";
+      adc_spi_din <= '0';
       wait until (spi_clk'event and spi_clk = '1');
       wait until (spi_clk'event and spi_clk = '1');
       wait until (spi_clk'event and spi_clk = '1');
       wait until (spi_clk'event and spi_clk = '1');
-      adc_spi_rw <= '1';
-      adc_wr_en  <= '1';
-      cmd_addr   <= "0101010";
+      adc_spi_rw  <= '1';
+      adc_wr_en   <= '1';
+      cmd_addr    <= "0101010";
+      byte_cnt    <= "00000";
+      adc_din     <= "10101010";
 
       for i in 1 to 50 loop
          wait until (spi_clk'event and spi_clk = '1');
