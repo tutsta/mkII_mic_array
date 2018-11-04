@@ -88,9 +88,11 @@ architecture rtl of adc_spi_engine is
    signal s_byte_cnt_reg     : std_logic_vector(4 downto 0) := "00000";
    signal s_byte_cnt_l       : unsigned(4 downto 0)         := "00000";
    signal s_adc_din_l        : std_logic_vector(7 downto 0) := "00000000";
+   signal s_adc_spi_rw_done  : std_logic                    := '0';
 
    -- spi interface signals
    signal s_cs_l         : std_logic := '1';
+   signal s_cs_l_d1      : std_logic := '1';
    signal s_sclk         : std_logic := '1';
    signal s_adc_spi_dout : std_logic := '0';
 
@@ -126,9 +128,10 @@ begin
    s_adc_spi_rw_pulse <= s_adc_spi_rw and not(s_adc_spi_rw_d);
 
    -- assign SPI output signals
-   adc_spi_cs   <= s_cs_l;
-   adc_spi_sclk <= s_sclk;
-   adc_spi_dout <= s_adc_spi_dout;
+   adc_spi_cs      <= s_cs_l;
+   adc_spi_sclk    <= s_sclk;
+   adc_spi_dout    <= s_adc_spi_dout;
+   adc_spi_rw_done <= s_adc_spi_rw_done;
 
 
    -- debug - decode the state machine current state
@@ -162,6 +165,16 @@ begin
          s_cmd_addr     <= cmd_addr;
          s_byte_cnt_reg <= byte_cnt;
          s_adc_din      <= adc_din;
+
+         -- generate the 'done' output 
+         s_cs_l_d1 <= s_cs_l;
+         if ((s_cs_l = '0') and (s_cs_l_d1 = '1')) then     -- falling edge
+            s_adc_spi_rw_done <= '0';
+         elsif ((s_cs_l = '1') and (s_cs_l_d1 = '0')) then  -- rising edge
+            s_adc_spi_rw_done <= '1';
+         else
+            s_adc_spi_rw_done <= s_adc_spi_rw_done;
+         end if;
 
          -- latch cmd/addr and data and reset the byte counter
          if ((s_adc_spi_rw_pulse = '1') and (s_sm_state = idle_st)) then
