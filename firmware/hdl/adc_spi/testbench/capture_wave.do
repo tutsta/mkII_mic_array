@@ -10,6 +10,7 @@ add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/adc_wr_en
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_engine_tben/cmd_addr
 add wave -noupdate -format Logic -radix unsigned /adc_spi_engine_tben/byte_cnt
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_engine_tben/adc_din
+add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/next_byte
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_engine_tben/adc_dout
 add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/adc_spi_cs
 add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/adc_spi_sclk
@@ -39,6 +40,7 @@ add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_bit_cn
 add wave -noupdate -format Logic -radix unsigned /adc_spi_engine_tben/dut/s_bit_cnt
 add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_inc_byte_cnt
 add wave -noupdate -format Logic -radix unsigned /adc_spi_engine_tben/dut/s_byte_cnt
+add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_next_byte
 
 
    

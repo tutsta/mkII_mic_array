@@ -60,6 +60,7 @@ entity adc_spi_engine_vgen is
       cmd_addr_dly    : buffer std_logic_vector(6 downto 0);
       byte_cnt_dly    : buffer std_logic_vector(4 downto 0);
       adc_din_dly     : buffer std_logic_vector(7 downto 0);
+      next_byte       : in     std_logic;
       adc_dout        : in     std_logic_vector(7 downto 0);
       adc_spi_cs      : in     std_logic;
       adc_spi_sclk    : in     std_logic;
@@ -84,7 +85,7 @@ architecture vgen of adc_spi_engine_vgen is
 
    constant main_clock_half_period : time := 10 ns;
 
-   type data_array_t is array(0 to 15) of std_logic_vector(7 downto 0);
+   type data_array_t is array(0 to 31) of std_logic_vector(7 downto 0);
 
    ---------------------------------------------------------------------------
    --                          SIGNAL DECLARATIONS                          --
@@ -170,16 +171,16 @@ begin
 
    driver : process
 
-      procedure adc_spi_write_proc(addr : std_logic_vector(6 downto 0);
-                                   data : data_array_t) is
+      procedure adc_spi_read_proc(addr  : std_logic_vector(6 downto 0);
+                                  bytes : std_logic_vector(4 downto 0)) is
       begin
          wait until ((spi_clk'event and spi_clk = '1') and
                      (adc_spi_rw_done = '1'));
          adc_spi_rw <= '1';
-         adc_wr_en  <= '0';
+         adc_wr_en  <= '1';
          cmd_addr   <= addr;
-         byte_cnt   <= "00000";
-         adc_din    <= data(0);
+         byte_cnt   <= bytes;
+         adc_din    <= (others => '0');
          -- wait till SPI core signals it has received the instruction before
          -- dropping the adc_spi_rw signal
          wait until ((spi_clk'event and spi_clk = '1') and
@@ -188,8 +189,29 @@ begin
          -- block further transactions until this one has finished
          wait until ((spi_clk'event and spi_clk = '1') and
                      (adc_spi_rw_done = '1'));
-      end procedure adc_spi_write_proc;
+      end procedure adc_spi_read_proc;
    
+   procedure adc_spi_write_proc(addr  : std_logic_vector(6 downto 0);
+                                data  : data_array_t;
+                                bytes : std_logic_vector(4 downto 0)) is
+   begin
+      wait until ((spi_clk'event and spi_clk = '1') and
+                  (adc_spi_rw_done = '1'));
+      adc_spi_rw <= '1';
+      adc_wr_en  <= '0';
+      cmd_addr   <= addr;
+      byte_cnt   <= bytes;
+      adc_din    <= data(0);
+      -- wait till SPI core signals it has received the instruction before
+      -- dropping the adc_spi_rw signal
+      wait until ((spi_clk'event and spi_clk = '1') and
+                  (adc_spi_rw_done = '0'));
+      adc_spi_rw <= '0';
+      -- block further transactions until this one has finished
+      wait until ((spi_clk'event and spi_clk = '1') and
+                  (adc_spi_rw_done = '1'));
+   end procedure adc_spi_write_proc;
+
    begin
       -----------------------------------------------------------------------
       --  Put your test vectors here!
@@ -206,29 +228,16 @@ begin
       wait until (spi_clk'event and spi_clk = '1');
       wait until (spi_clk'event and spi_clk = '1');
       wait until (spi_clk'event and spi_clk = '1');
-      adc_spi_rw  <= '1';
-      adc_wr_en   <= '1';
-      cmd_addr    <= "0101010";
-      byte_cnt    <= "00000";
-      adc_din     <= "10101010";
+      -- do an SPI read
+      adc_spi_read_proc("0101010", "00001");
 
       for i in 1 to 50 loop
          wait until (spi_clk'event and spi_clk = '1');
       end loop;
-      adc_spi_rw <= '0';
-      adc_wr_en  <= '0';
-      cmd_addr   <= "0000000";
-
-      for i in 1 to 50 loop
-         wait until (spi_clk'event and spi_clk = '1');
-      end loop;
+      -- do an SPI write
       adc_din_array(0)       <= "11001100";
       adc_din_array(1 to 15) <= (others => (others => '0'));
-      adc_spi_write_proc("1010101", adc_din_array);
---      adc_spi_rw <= '1';
---      adc_wr_en  <= '0';
---      cmd_addr   <= "1010101";
---      adc_din    <= "11001100";
+      adc_spi_write_proc("1010101", adc_din_array, "00000");
 
       endless : loop
          wait until (spi_clk'event and spi_clk = '1');

@@ -42,8 +42,9 @@ entity adc_spi_engine is
       adc_spi_rw_done : out std_logic;
       adc_wr_en       : in  std_logic;
       cmd_addr        : in  std_logic_vector(6 downto 0);
-      byte_cnt        : in  std_logic_vector(4 downto 0);  -- number of bythes to transfer - 1
+      byte_cnt        : in  std_logic_vector(4 downto 0);  -- number of bythes to transfer
       adc_din         : in  std_logic_vector(7 downto 0);
+      next_byte       : out std_logic;
       adc_dout        : out std_logic_vector(7 downto 0);
 
       -- ADC SPI interface signals
@@ -86,7 +87,6 @@ architecture rtl of adc_spi_engine is
    signal s_adc_din          : std_logic_vector(7 downto 0) := (others => '0');
    signal s_cmd_addr_l       : std_logic_vector(7 downto 0) := "00000000";
    signal s_byte_cnt_reg     : std_logic_vector(4 downto 0) := "00000";
-   signal s_byte_cnt_l       : unsigned(4 downto 0)         := "00000";
    signal s_adc_din_l        : std_logic_vector(7 downto 0) := "00000000";
    signal s_adc_spi_rw_done  : std_logic                    := '0';
 
@@ -102,8 +102,9 @@ architecture rtl of adc_spi_engine is
    signal s_sclk_en             : std_logic            := '0';
    signal s_bit_cnt_en          : std_logic            := '0';
    signal s_bit_cnt             : unsigned(3 downto 0) := "0000";
-   signal s_inc_byte_cnt        : std_logic            := '0';
+   signal s_dec_byte_cnt        : std_logic            := '0';
    signal s_byte_cnt            : unsigned(4 downto 0) := "00000";
+   signal s_next_byte           : std_logic            := '0';
 
 
    ---------------------------------------------------------------------------
@@ -168,9 +169,9 @@ begin
 
          -- generate the 'done' output 
          s_cs_l_d1 <= s_cs_l;
-         if ((s_cs_l = '0') and (s_cs_l_d1 = '1')) then     -- falling edge
+         if ((s_cs_l = '0') and (s_cs_l_d1 = '1')) then  -- falling edge
             s_adc_spi_rw_done <= '0';
-         elsif ((s_cs_l = '1') and (s_cs_l_d1 = '0')) then  -- rising edge
+         elsif (s_sm_state = idle_st) or ((s_cs_l = '1') and (s_cs_l_d1 = '0')) then  -- rising edge
             s_adc_spi_rw_done <= '1';
          else
             s_adc_spi_rw_done <= s_adc_spi_rw_done;
@@ -179,9 +180,8 @@ begin
          -- latch cmd/addr and data and reset the byte counter
          if ((s_adc_spi_rw_pulse = '1') and (s_sm_state = idle_st)) then
             s_cmd_addr_l <= s_adc_wr_en & s_cmd_addr;
-            s_byte_cnt_l <= unsigned(s_byte_cnt_reg);
             s_adc_din_l  <= s_adc_din;
-            s_byte_cnt   <= (others => '0');
+            s_byte_cnt   <= unsigned(s_byte_cnt_reg);
          end if;
 
          -- cmd/addr sequence counter
@@ -199,8 +199,8 @@ begin
          end if;
 
          -- data byte counter
-         if s_inc_byte_cnt = '1' then
-            s_byte_cnt <= s_byte_cnt + 1;
+         if s_dec_byte_cnt = '1' then
+            s_byte_cnt <= s_byte_cnt - 1;
          end if;
 
          -- SCLK generation
@@ -264,16 +264,16 @@ begin
                
             when rw_data_byte_st =>
                if (s_bit_cnt = "1110") then
-                  s_inc_byte_cnt <= '1';
+                  s_dec_byte_cnt <= '1';
                   s_sm_state     <= check_byte_cnt_st;
                else
-                  s_inc_byte_cnt <= '0';
+                  s_dec_byte_cnt <= '0';
                   s_sm_state     <= rw_data_byte_st;
                end if;
                
             when check_byte_cnt_st =>
-               s_inc_byte_cnt <= '0';
-               if s_byte_cnt = s_byte_cnt_l then
+               s_dec_byte_cnt <= '0';
+               if s_byte_cnt = "00000" then
                   s_sm_state <= deassert_cs_st;
                else
                   s_sm_state <= rw_data_byte_st;
