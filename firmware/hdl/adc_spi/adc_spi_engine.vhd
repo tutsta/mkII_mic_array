@@ -69,7 +69,8 @@ architecture rtl of adc_spi_engine is
                         wait_for_data_st,   --03
                         rw_data_byte_st,    --04
                         check_byte_cnt_st,  --05
-                        deassert_cs_st);    --06
+                        wait_last_byte_st,  --06
+                        deassert_cs_st);    --07
 
 
    ---------------------------------------------------------------------------
@@ -97,14 +98,15 @@ architecture rtl of adc_spi_engine is
    signal s_adc_spi_dout : std_logic := '0';
 
    -- sequencer and control signals
-   signal s_cmd_addr_seq_cnt    : unsigned(8 downto 0) := (others => '0');
-   signal s_cmd_addr_seq_cnt_en : std_logic            := '0';
-   signal s_sclk_en             : std_logic            := '0';
-   signal s_bit_cnt_en          : std_logic            := '0';
-   signal s_bit_cnt             : unsigned(3 downto 0) := "0000";
-   signal s_dec_byte_cnt        : std_logic            := '0';
-   signal s_byte_cnt            : unsigned(4 downto 0) := "00000";
-   signal s_next_byte           : std_logic            := '0';
+   signal s_cmd_addr_seq_cnt    : unsigned(8 downto 0)         := (others => '0');
+   signal s_cmd_addr_seq_cnt_en : std_logic                    := '0';
+   signal s_sclk_en             : std_logic                    := '0';
+   signal s_bit_cnt_en          : std_logic                    := '0';
+   signal s_bit_cnt             : unsigned(3 downto 0)         := "0000";
+   signal s_dec_byte_cnt        : std_logic                    := '0';
+   signal s_dec_byte_cnt_pipe   : std_logic_vector(5 downto 0) := "000000";
+   signal s_byte_cnt            : unsigned(4 downto 0)         := "00000";
+   signal s_next_byte           : std_logic                    := '0';
 
 
    ---------------------------------------------------------------------------
@@ -128,6 +130,9 @@ begin
    -- rising edge detect on adc_spi_rw
    s_adc_spi_rw_pulse <= s_adc_spi_rw and not(s_adc_spi_rw_d);
 
+   -- assign local side signals
+   next_byte <= s_next_byte;
+
    -- assign SPI output signals
    adc_spi_cs      <= s_cs_l;
    adc_spi_sclk    <= s_sclk;
@@ -142,8 +147,8 @@ begin
                      "011" when s_sm_state = wait_for_data_st else
                      "100" when s_sm_state = rw_data_byte_st else
                      "101" when s_sm_state = check_byte_cnt_st else
-                     "110" when s_sm_state = deassert_cs_st else
-                     "111";             -- undefined state
+                     "110" when s_sm_state = wait_last_byte_st else
+                     "111";             -- deassert_cs_st
 
    ---------------------------------------------------------------------------
    --                         CONCURRENT PROCESSES                          --
@@ -180,8 +185,12 @@ begin
          -- latch cmd/addr and data and reset the byte counter
          if ((s_adc_spi_rw_pulse = '1') and (s_sm_state = idle_st)) then
             s_cmd_addr_l <= s_adc_wr_en & s_cmd_addr;
-            s_adc_din_l  <= s_adc_din;
             s_byte_cnt   <= unsigned(s_byte_cnt_reg);
+         end if;
+
+         -- latch the current/next input data byte
+         if (((s_adc_spi_rw_pulse = '1') and (s_sm_state = idle_st)) or (s_dec_byte_cnt_pipe(3) = '1')) then
+            s_adc_din_l <= s_adc_din;
          end if;
 
          -- cmd/addr sequence counter
@@ -199,6 +208,15 @@ begin
          end if;
 
          -- data byte counter
+         s_dec_byte_cnt_pipe(0)          <= s_dec_byte_cnt;
+         s_dec_byte_cnt_pipe(5 downto 1) <= s_dec_byte_cnt_pipe(4 downto 0);
+         -- request next byte
+         if s_dec_byte_cnt = '1' then
+            s_next_byte <= '1';
+         else
+            s_next_byte <= '0';
+         end if;
+
          if s_dec_byte_cnt = '1' then
             s_byte_cnt <= s_byte_cnt - 1;
          end if;
@@ -216,7 +234,7 @@ begin
          end if;
 
          -- generate serial data out
-         if (((s_sm_state = rw_data_byte_st) or (s_sm_state = check_byte_cnt_st)) and (s_cmd_addr_seq_cnt(0) = '0')) then
+         if (((s_sm_state = rw_data_byte_st) or (s_sm_state = check_byte_cnt_st) or (s_sm_state = wait_last_byte_st)) and (s_cmd_addr_seq_cnt(0) = '0')) then
             s_adc_spi_dout          <= s_adc_din_l(7);
             s_adc_din_l(7 downto 1) <= s_adc_din_l(6 downto 0);
             s_adc_din_l(0)          <= '0';
@@ -263,20 +281,27 @@ begin
                end if;
                
             when rw_data_byte_st =>
-               if (s_bit_cnt = "1110") then
+               if (s_bit_cnt = "1010") then
                   s_dec_byte_cnt <= '1';
                   s_sm_state     <= check_byte_cnt_st;
                else
                   s_dec_byte_cnt <= '0';
                   s_sm_state     <= rw_data_byte_st;
                end if;
-               
+
             when check_byte_cnt_st =>
                s_dec_byte_cnt <= '0';
-               if s_byte_cnt = "00000" then
-                  s_sm_state <= deassert_cs_st;
+               if (s_byte_cnt = "00000") then
+                  s_sm_state <= wait_last_byte_st;
                else
                   s_sm_state <= rw_data_byte_st;
+               end if;
+               
+            when wait_last_byte_st =>
+               if (s_dec_byte_cnt_pipe(3) = '1') then
+                  s_sm_state <= deassert_cs_st;
+               else
+                  s_sm_state <= s_sm_state;
                end if;
                
             when deassert_cs_st =>

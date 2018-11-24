@@ -26,7 +26,6 @@ add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_adc_sp
 add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_adc_wr_en
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_engine_tben/dut/s_cmd_addr
 add wave -noupdate -format Logic -radix unsigned /adc_spi_engine_tben/dut/s_byte_cnt_reg
-add wave -noupdate -format Logic -radix unsigned /adc_spi_engine_tben/dut/s_byte_cnt_l
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_engine_tben/dut/s_adc_din
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_engine_tben/dut/s_cmd_addr_l
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_engine_tben/dut/s_adc_din_l
@@ -38,7 +37,13 @@ add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_cmd_ad
 add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_sclk_en
 add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_bit_cnt_en
 add wave -noupdate -format Logic -radix unsigned /adc_spi_engine_tben/dut/s_bit_cnt
-add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_inc_byte_cnt
+add wave -noupdate -format Logic -radix unsigned /adc_spi_engine_tben/dut/s_dec_byte_cnt
+add wave -noupdate -format Logic -radix unsigned {/adc_spi_engine_tben/dut/s_dec_byte_cnt_pipe(0)}
+add wave -noupdate -format Logic -radix unsigned {/adc_spi_engine_tben/dut/s_dec_byte_cnt_pipe(1)}
+add wave -noupdate -format Logic -radix unsigned {/adc_spi_engine_tben/dut/s_dec_byte_cnt_pipe(2)}
+add wave -noupdate -format Logic -radix unsigned {/adc_spi_engine_tben/dut/s_dec_byte_cnt_pipe(3)}
+add wave -noupdate -format Logic -radix unsigned {/adc_spi_engine_tben/dut/s_dec_byte_cnt_pipe(4)}
+add wave -noupdate -format Logic -radix unsigned {/adc_spi_engine_tben/dut/s_dec_byte_cnt_pipe(5)}
 add wave -noupdate -format Logic -radix unsigned /adc_spi_engine_tben/dut/s_byte_cnt
 add wave -noupdate -format Logic -radix binary /adc_spi_engine_tben/dut/s_next_byte
 
