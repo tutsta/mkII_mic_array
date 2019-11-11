@@ -1,0 +1,177 @@
+
+-------------------------------------------------------------------------------
+-- Copyright 2019.
+-- CSIRO.
+-- All Rights Reserved.
+--  
+--
+--   File Name:      adc_spi_stream.tben
+--   Type:           TBEN
+--   Designer:       J. Tuthill
+--   Created:        Sun Nov 10 21:55:26 2019
+--   Template Rev:   2.0
+--
+--   Title:          Testbench for ADC_SPI_STREAM.
+--   Description:
+--              This file was automatically generated.
+--              Do not edit!
+--   
+--   
+--   
+--   
+--   The following is updated by RCS/CVS.
+--   Modification History:
+--   $Log$
+--
+-- 
+-------------------------------------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+
+
+use std.textio.all;                     -- Text Input/Output.
+
+
+-- User defined use clauses
+
+
+
+
+-------------------------------------------------------------------------------
+entity adc_spi_stream_tben is
+
+end adc_spi_stream_tben;
+
+-------------------------------------------------------------------------------
+architecture tben of adc_spi_stream_tben is
+
+   ---------------------------------------------------------------------------
+   --                          CONSTANT DECLARATIONS                        --
+   ---------------------------------------------------------------------------
+   constant c_sck_ratio_pwr : integer := 3;
+   constant c_num_devices   : integer := 1;
+
+
+
+   ---------------------------------------------------------------------------
+   --                          SIGNAL DECLARATIONS                          --
+   ---------------------------------------------------------------------------
+   signal clk              : std_logic;
+   signal reset            : std_logic;
+   signal stream_go        : std_logic;
+   signal hst_adc_spi_cs   : std_logic;
+   signal hst_adc_spi_sclk : std_logic;
+   signal hst_adc_spi_dout : std_logic;
+   signal hst_adc_spi_din  : std_logic;
+   signal adc_spi_cs       : std_logic;
+   signal adc_spi_sclk     : std_logic;
+   signal adc_spi_dout     : std_logic;
+   signal adc_spi_din      : std_logic;
+   signal adc_drdy_n       : std_logic;
+
+
+
+
+   ---------------------------------------------------------------------------
+   --                        COMPONENT DECLARATIONS                         --
+   ---------------------------------------------------------------------------
+
+   component adc_spi_stream
+      generic (
+         g_sck_ratio_pwr : integer;
+         g_num_devices   : integer);
+      port (
+         clk              : in  std_logic;
+         reset            : in  std_logic;
+         stream_go        : in  std_logic;
+         hst_adc_spi_cs   : in  std_logic;
+         hst_adc_spi_sclk : in  std_logic;
+         hst_adc_spi_dout : in  std_logic;
+         hst_adc_spi_din  : out std_logic;
+         adc_spi_cs       : out std_logic;
+         adc_spi_sclk     : out std_logic;
+         adc_spi_dout     : out std_logic;
+         adc_spi_din      : in  std_logic;
+         adc_drdy_n       : in  std_logic);
+   end component;
+
+   component adc_spi_stream_vgen
+      port (
+         clk                  : buffer std_logic;
+         reset_dly            : buffer std_logic;
+         stream_go_dly        : buffer std_logic;
+         hst_adc_spi_cs_dly   : buffer std_logic;
+         hst_adc_spi_sclk_dly : buffer std_logic;
+         hst_adc_spi_dout_dly : buffer std_logic;
+         hst_adc_spi_din      : in     std_logic;
+         adc_spi_cs           : in     std_logic;
+         adc_spi_sclk         : in     std_logic;
+         adc_spi_dout         : in     std_logic;
+         adc_spi_din_dly      : buffer std_logic;
+         adc_drdy_n_dly       : buffer std_logic
+         );
+   end component;
+
+
+
+begin
+   ---------------------------------------------------------------------------
+   --                    INSTANTIATE COMPONENTS                             --
+   ---------------------------------------------------------------------------
+
+   dut : adc_spi_stream
+      generic map (
+         g_sck_ratio_pwr => c_sck_ratio_pwr,
+         g_num_devices   => c_num_devices)
+      port map (
+         clk              => clk,
+         reset            => reset,
+         stream_go        => stream_go,
+         hst_adc_spi_cs   => hst_adc_spi_cs,
+         hst_adc_spi_sclk => hst_adc_spi_sclk,
+         hst_adc_spi_dout => hst_adc_spi_dout,
+         hst_adc_spi_din  => hst_adc_spi_din,
+         adc_spi_cs       => adc_spi_cs,
+         adc_spi_sclk     => adc_spi_sclk,
+         adc_spi_dout     => adc_spi_dout,
+         adc_spi_din      => adc_spi_din,
+         adc_drdy_n       => adc_drdy_n);
+
+
+   vgen : adc_spi_stream_vgen
+      port map (
+         clk                  => clk,
+         reset_dly            => reset,
+         stream_go_dly        => stream_go,
+         hst_adc_spi_cs_dly   => hst_adc_spi_cs,
+         hst_adc_spi_sclk_dly => hst_adc_spi_sclk,
+         hst_adc_spi_dout_dly => hst_adc_spi_dout,
+         hst_adc_spi_din      => hst_adc_spi_din,
+         adc_spi_cs           => adc_spi_cs,
+         adc_spi_sclk         => adc_spi_sclk,
+         adc_spi_dout         => adc_spi_dout,
+         adc_spi_din_dly      => adc_spi_din,
+         adc_drdy_n_dly       => adc_drdy_n
+         );
+
+
+   ---------------------------------------------------------------------------
+   --                        CONCURRENT SIGNAL ASSIGNMENTS                  --
+   ---------------------------------------------------------------------------
+
+
+   ---------------------------------------------------------------------------
+   --                         CONCURRENT PROCESSES                          --
+   ---------------------------------------------------------------------------
+
+   --  ** Start of file processes ** --
+
+
+
+
+   --  ** End of file processes ** --
+
+
+end tben;

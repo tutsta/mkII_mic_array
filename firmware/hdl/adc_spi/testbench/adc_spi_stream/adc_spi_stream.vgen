@@ -1,0 +1,206 @@
+
+-------------------------------------------------------------------------------
+-- Copyright 2019.
+-- CSIRO.
+-- All Rights Reserved.
+--  
+--
+--   File Name:      adc_spi_stream.vgen
+--   Type:           VGEN
+--   Designer:       J. Tuthill
+--   Created:        Sun Nov 10 21:55:15 2019
+--   Template Rev:   2.0
+--
+--   Title:          Vector generator for the SPI streaming data module.
+--   Description: 
+--   
+--   
+--   
+--
+--   
+--   The following is updated by RCS/CVS.
+--   Modification History:
+--   $Log$
+--   
+--   
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+--  The following line is used by the testbench generator and the
+--  av-simulate function. 
+--  NOTE: The time can be changed from ns to; ps,ns,us,ms.
+--              TOTAL SIMULATION TIME (ns): 100 
+--                 generate_simulus_files = true
+--                 generate_capture_files = true
+--                   dont_touch_tben_file = false
+--                    dont_touch_cmd_file = false
+--  TRACE SIGNALS
+--  /ADC_SPI_STREAM_TBEN/DUT/*
+--
+-------------------------------------------------------------------------------
+
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+
+-- Add user defined use clauses under here
+
+
+
+-------------------------------------------------------------------------------
+entity adc_spi_stream_vgen is
+   port (
+      clk                  : buffer std_logic;
+      reset_dly            : buffer std_logic;
+      stream_go_dly        : buffer std_logic;
+      hst_adc_spi_cs_dly   : buffer std_logic;
+      hst_adc_spi_sclk_dly : buffer std_logic;
+      hst_adc_spi_dout_dly : buffer std_logic;
+      hst_adc_spi_din      : in     std_logic;
+      adc_spi_cs           : in     std_logic;
+      adc_spi_sclk         : in     std_logic;
+      adc_spi_dout         : in     std_logic;
+      adc_spi_din_dly      : buffer std_logic;
+      adc_drdy_n_dly       : buffer std_logic
+      );
+end adc_spi_stream_vgen;
+
+-------------------------------------------------------------------------------
+architecture vgen of adc_spi_stream_vgen is
+
+   ---------------------------------------------------------------------------
+   --                 CONSTANT, TYPE AND GENERIC DEFINITIONS                --
+   ---------------------------------------------------------------------------
+   ---------------------------------------------------------------------------
+   --  The INP_DELAY constants correspond to tester timing groups. Edit to
+   --  change INP_DELAY values from the examples below. Delete the unused
+   --  INP_DELAY constants.
+   ---------------------------------------------------------------------------
+
+   constant inp_delay : time := 3.0 ns;
+
+   constant main_clock_half_period : time := 10 ns;
+
+   ---------------------------------------------------------------------------
+   --                          SIGNAL DECLARATIONS                          --
+   ---------------------------------------------------------------------------
+   signal reset            : std_logic;
+   signal stream_go        : std_logic;
+   signal hst_adc_spi_cs   : std_logic;
+   signal hst_adc_sclk     : std_logic;
+   signal hst_adc_spi_dout : std_logic;
+   signal adc_spi_din      : std_logic;
+   signal adc_drdy_n       : std_logic;
+
+
+   ---------------------------------------------------------------------------
+   --                        COMPONENT DECLARATIONS                         --
+   ---------------------------------------------------------------------------
+
+
+begin
+   ---------------------------------------------------------------------------
+   --                    INSTANTIATE COMPONENTS                             --
+   ---------------------------------------------------------------------------
+
+   ---------------------------------------------------------------------------
+   --                    CONCURRENT SIGNAL ASSIGNMENTS                      --
+   ---------------------------------------------------------------------------
+   ---------------------------------------------------------------------------
+   --  Use the timing groups above to assign DUT input delays with respect to
+   --  the clock. Use these to test for Setup/Hold timing violations.
+   ---------------------------------------------------------------------------
+
+   reset_dly            <= reset            after inp_delay;
+   stream_go_dly        <= stream_go        after inp_delay;
+   hst_adc_spi_cs_dly   <= hst_adc_spi_cs   after inp_delay;
+   hst_adc_spi_sclk_dly <= hst_adc_sclk     after inp_delay;
+   hst_adc_spi_dout_dly <= hst_adc_spi_dout after inp_delay;
+   adc_spi_din_dly      <= adc_spi_din      after inp_delay;
+   adc_drdy_n_dly       <= adc_drdy_n       after inp_delay;
+
+
+   ---------------------------------------------------------------------------
+   --                         CONCURRENT PROCESSES                          --
+   ---------------------------------------------------------------------------
+
+
+   ---------------------------------------------------------------------------
+   --  Process:       MAIN_CLOCK_GEN 
+   --  Timing Domain: MAIN
+   --  Purpose:       Generates Clock Waveform.
+   --  Outputs:       CLK 
+   --  (The following is used by av-testbench for signals in the vpat file.)
+   --  Signals in this time domain:
+   --       hst_adc_spi_din
+   --       adc_spi_cs
+   --       adc_spi_sclk
+   --       adc_spi_dout
+   ---------------------------------------------------------------------------
+   main_clock_gen : process
+   begin
+      clk <= '0';
+      --  Wait for the initial start up time. 
+      --  (You can edit the times below; Constants maybe used.)
+      wait for main_clock_half_period;
+
+      endless : loop
+         clk <= '1';
+         wait for main_clock_half_period;
+         clk <= '0';
+         wait for main_clock_half_period;
+      end loop;
+
+   end process main_clock_gen;
+
+
+
+
+   ---------------------------------------------------------------------------
+   --  Process:  DRIVER
+   --  Purpose:  To drive the output signals of the vector generator.
+   --  Inputs:   Feedback from the DUT.
+   --  Outputs:  Inputs to DUT.
+   ---------------------------------------------------------------------------
+
+
+   driver : process
+
+   begin
+      -----------------------------------------------------------------------
+      --  Put your test vectors here!
+      -----------------------------------------------------------------------
+      wait until (clk'event and clk = '1');
+      reset            <= '0';
+      stream_go        <= '0';
+      hst_adc_spi_cs   <= '1';
+      hst_adc_sclk     <= '1';
+      hst_adc_spi_dout <= '0';
+      adc_spi_din      <= '0';
+      adc_drdy_n       <= '0';
+
+      for i in 1 to 10 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+      stream_go <= '1';
+      for i in 1 to 10 loop
+         wait until (clk'event and clk = '1');
+      end loop;
+      adc_drdy_n <= '1';
+      wait until (clk'event and clk = '1');
+      wait until (adc_spi_cs = '0');
+      wait until (clk'event and clk = '1');
+      adc_drdy_n <= '0';
+      wait until (clk'event and clk = '1');
+      stream_go  <= '0';
+
+      endless : loop
+         wait until (clk'event and clk = '1');
+      end loop;
+
+
+   end process driver;
+
+end vgen;
