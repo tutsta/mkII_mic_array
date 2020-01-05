@@ -10,3 +10,7 @@ set_property PULLUP TRUE [get_ports spi_mosi_0]
 set_property PULLUP TRUE [get_ports spi_miso_0]
 set_property PULLUP TRUE [get_ports spi_sclk_0]
 set_property PULLUP TRUE [get_ports spi_ss_0]
+
+# Test LED
+set_property IOSTANDARD LVCMOS33 [get_ports led_test_0]
+set_property PACKAGE_PIN E13 [get_ports led_test_0]

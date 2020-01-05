@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include "xparameters.h"	/* XPAR parameters */
 #include "xspips.h"		/* SPI device driver */
+#include "xil_io.h"
 //#include "xspi_l.h"
 #include "xil_printf.h"
 
@@ -23,6 +24,8 @@
 #define SPI_DEVICE_ID		XPAR_PS7_SPI_0_DEVICE_ID
 
 #define SPI_BASEADDR		XPAR_PS7_SPI_0_BASEADDR
+
+#define SPI_CTRL_BASEADDR   0x43C00000
 
 // This is the size of the buffer to be transmitted/received in this example.
 #define BUFFER_SIZE      12
@@ -76,7 +79,8 @@ float fXinClock = 24.576e6;
 //Main function
 int main(void)
 {
-//	u32 Control;
+	//u32 axiBaseAddr = SPI_CTRL_BASEADDR;
+	u32 Control;
     char chkey;
 	int bLooping = true;
 
@@ -110,7 +114,15 @@ int main(void)
 	printf("MiniZed SPI interface to MAX11040K ADC\n");
 	printf("################################################################################\n");
 	fflush(stdout); // Prints to screen or whatever your standard out is
-    
+
+	//Read the value of the first AXI-Lite peripheral register
+	Control = Xil_In32(SPI_CTRL_BASEADDR);
+	printf("SPI control peripheral register 0 addr: 0x%08lX\n", Control);
+	Xil_Out32(SPI_CTRL_BASEADDR, 0x1);
+	Control = Xil_In32(SPI_CTRL_BASEADDR);
+	printf("SPI control peripheral register 0 value: 0x%08lX\n", Control);
+
+
     SpiStart(SPI_DEVICE_ID);
 
     display_menu();

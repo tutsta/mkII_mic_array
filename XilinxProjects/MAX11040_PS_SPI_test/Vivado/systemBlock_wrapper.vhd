@@ -1,7 +1,7 @@
 --Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------
 --Tool Version: Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
---Date        : Sun Jan  5 14:46:25 2020
+--Date        : Sun Jan  5 18:55:22 2020
 --Host        : ROCKET-MM running 64-bit major release  (build 9200)
 --Command     : generate_target systemBlock_wrapper.bd
 --Design      : systemBlock_wrapper
@@ -34,6 +34,7 @@ entity systemBlock_wrapper is
     FIXED_IO_ps_clk : inout STD_LOGIC;
     FIXED_IO_ps_porb : inout STD_LOGIC;
     FIXED_IO_ps_srstb : inout STD_LOGIC;
+    led_test_0 : out STD_LOGIC;
     spi_miso_0 : in STD_LOGIC;
     spi_mosi_0 : out STD_LOGIC;
     spi_sclk_0 : out STD_LOGIC;
@@ -68,7 +69,8 @@ architecture STRUCTURE of systemBlock_wrapper is
     spi_sclk_0 : out STD_LOGIC;
     spi_mosi_0 : out STD_LOGIC;
     spi_ss_0 : out STD_LOGIC;
-    spi_miso_0 : in STD_LOGIC
+    spi_miso_0 : in STD_LOGIC;
+    led_test_0 : out STD_LOGIC
   );
   end component systemBlock;
 begin
@@ -95,6 +97,7 @@ systemBlock_i: component systemBlock
       FIXED_IO_ps_clk => FIXED_IO_ps_clk,
       FIXED_IO_ps_porb => FIXED_IO_ps_porb,
       FIXED_IO_ps_srstb => FIXED_IO_ps_srstb,
+      led_test_0 => led_test_0,
       spi_miso_0 => spi_miso_0,
       spi_mosi_0 => spi_mosi_0,
       spi_sclk_0 => spi_sclk_0,
