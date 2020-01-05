@@ -83,6 +83,8 @@ architecture vgen of adc_spi_stream_vgen is
 
    constant main_clock_half_period : time := 10 ns;
 
+   constant c_adc_read_word : std_logic_vector(255 downto 0) := x"ae0123456789abcdef0123456789abcdae0123456789abcdef0123456789abcd";
+
    ---------------------------------------------------------------------------
    --                          SIGNAL DECLARATIONS                          --
    ---------------------------------------------------------------------------
@@ -93,6 +95,16 @@ architecture vgen of adc_spi_stream_vgen is
    signal hst_adc_spi_dout : std_logic;
    signal adc_spi_din      : std_logic;
    signal adc_drdy_n       : std_logic;
+
+   signal adc_spi_cs_reg     : std_logic                      := '0';
+   signal adc_spi_cs_d1      : std_logic                      := '0';
+   signal adc_spi_sclk_reg   : std_logic                      := '1';
+   signal adc_spi_sclk_d1    : std_logic                      := '1';
+   signal adc_spi_dout_reg   : std_logic                      := '0';
+   signal adc_spi_rw_latch   : std_logic                      := '0';
+   signal adc_rw_bit_latched : std_logic                      := '0';
+   signal adc_spi_bit_cnt    : unsigned(7 downto 0)           := "00000000";
+   signal adc_read_word      : std_logic_vector(255 downto 0) := c_adc_read_word;
 
 
    ---------------------------------------------------------------------------
@@ -156,6 +168,53 @@ begin
    end process main_clock_gen;
 
 
+   -- ADC read process
+   -- models the read request response from the ADCs
+   adc_read_proc : process(clk)
+   begin
+      if rising_edge(clk) then
+
+         -- register the spi inputs from the host
+         adc_spi_cs_reg   <= adc_spi_cs;
+         adc_spi_cs_d1    <= adc_spi_cs_reg;
+         adc_spi_sclk_reg <= adc_spi_sclk;
+         adc_spi_sclk_d1  <= adc_spi_sclk_reg;
+         adc_spi_dout_reg <= adc_spi_dout;
+
+         -- reset the bit count on a falling edge of chip select
+         if ((adc_spi_cs_reg = '0') and (adc_spi_cs_d1 = '1')) then
+            adc_spi_bit_cnt <= "00000000";
+            adc_read_word   <= c_adc_read_word;
+         end if;
+
+         -- decode the R/W bit from the first bit of the transaction
+         if (adc_spi_cs_reg = '0') then
+            -- detect falling edge on the SPI clock
+            if (((adc_spi_sclk_reg = '0') and (adc_spi_sclk_d1 = '1')) and (adc_rw_bit_latched = '0')) then
+               adc_spi_rw_latch   <= adc_spi_dout_reg;
+               adc_rw_bit_latched <= '1';
+            end if;
+         end if;
+
+         -- reset the R/W bit and bit latched on the rising edge of the chip select
+         if ((adc_spi_cs_reg = '1') and (adc_spi_cs_d1 = '0')) then
+            adc_spi_rw_latch   <= '0';
+            adc_rw_bit_latched <= '0';
+         end if;
+
+
+         -- detect the rising edge of the SPI clock
+         if (adc_spi_cs_reg = '0') and ((adc_spi_sclk = '1') and (adc_spi_sclk_reg = '0') and (adc_spi_rw_latch = '1')) then
+            adc_spi_bit_cnt <= adc_spi_bit_cnt + 1;
+            -- shift out ADC read data
+            if (adc_spi_bit_cnt > 6) then
+               adc_spi_din                 <= adc_read_word(255);
+               adc_read_word(255 downto 1) <= adc_read_word(254 downto 0);
+            end if;
+         end if;
+         
+      end if;  -- if rising_edge(clk)
+   end process adc_read_proc;
 
 
    ---------------------------------------------------------------------------
@@ -178,7 +237,6 @@ begin
       hst_adc_spi_cs   <= '1';
       hst_adc_sclk     <= '1';
       hst_adc_spi_dout <= '0';
-      adc_spi_din      <= '0';
       adc_drdy_n       <= '0';
 
       for i in 1 to 10 loop

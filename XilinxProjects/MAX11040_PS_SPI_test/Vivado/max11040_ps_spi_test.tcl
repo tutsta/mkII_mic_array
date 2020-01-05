@@ -175,7 +175,7 @@ set obj [get_filesets sources_1]
 # Import local files from the original project
 set files [list \
  [file normalize "${origin_dir}/SPI_passthrough.vhd" ]\
- [file normalize "${origin_dir}/../../bd/systemBlock/hdl/systemBlock_wrapper.vhd" ]\
+ [file normalize "${origin_dir}/systemBlock_wrapper.vhd" ]\
 ]
 set imported_files [import_files -fileset sources_1 $files]
 
@@ -183,7 +183,7 @@ set imported_files [import_files -fileset sources_1 $files]
 # None
 
 # Set 'sources_1' fileset file properties for local files
-set file "hdl/SPI_passthrough.vhd"
+set file "SPI_passthrough.vhd"
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "file_type" -value "VHDL" -objects $file_obj
 set_property -name "is_enabled" -value "1" -objects $file_obj
@@ -194,7 +194,7 @@ set_property -name "used_in" -value "synthesis simulation" -objects $file_obj
 set_property -name "used_in_simulation" -value "1" -objects $file_obj
 set_property -name "used_in_synthesis" -value "1" -objects $file_obj
 
-set file "hdl/systemBlock_wrapper.vhd"
+set file "systemBlock_wrapper.vhd"
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "file_type" -value "VHDL" -objects $file_obj
 set_property -name "is_enabled" -value "1" -objects $file_obj
@@ -232,9 +232,9 @@ if {[string equal [get_filesets -quiet constrs_1] ""]} {
 set obj [get_filesets constrs_1]
 
 # Add/Import constrs file and set constrs file properties
-set file "[file normalize "$origin_dir/../../../constrs_1/new/spi_const.xdc"]"
+set file "[file normalize "$origin_dir/spi_const.xdc"]"
 set file_imported [import_files -fileset constrs_1 [list $file]]
-set file "new/spi_const.xdc"
+set file "spi_const.xdc"
 set file_obj [get_files -of_objects [get_filesets constrs_1] [list "*$file"]]
 set_property -name "file_type" -value "XDC" -objects $file_obj
 set_property -name "is_enabled" -value "1" -objects $file_obj

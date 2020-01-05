@@ -90,6 +90,9 @@ architecture rtl of adc_spi_engine is
    signal s_byte_cnt_reg     : std_logic_vector(4 downto 0) := "00000";
    signal s_adc_din_l        : std_logic_vector(7 downto 0) := "00000000";
    signal s_adc_spi_rw_done  : std_logic                    := '0';
+   signal s_adc_spi_din      : std_logic                    := '0';
+   signal s_adc_dout         : std_logic_vector(7 downto 0) := "00000000";
+   signal s_adc_rd_bit_cnt   : unsigned(3 downto 0)         := "0000";
 
    -- spi interface signals
    signal s_cs_l         : std_logic := '1';
@@ -132,6 +135,7 @@ begin
 
    -- assign local side signals
    next_byte <= s_next_byte;
+   adc_dout  <= s_adc_dout;
 
    -- assign SPI output signals
    adc_spi_cs      <= s_cs_l;
@@ -164,7 +168,10 @@ begin
 
    begin
       if rising_edge(spi_clk) then
-         -- register the input signals
+         -- register the ADC input data signal
+         s_adc_spi_din <= adc_spi_din;
+
+         -- register the fabric-side input signals
          s_adc_spi_rw   <= adc_spi_rw;
          s_adc_spi_rw_d <= s_adc_spi_rw;
          s_adc_wr_en    <= adc_wr_en;
@@ -238,6 +245,11 @@ begin
             s_adc_spi_dout          <= s_adc_din_l(7);
             s_adc_din_l(7 downto 1) <= s_adc_din_l(6 downto 0);
             s_adc_din_l(0)          <= '0';
+            if (s_adc_spi_rw = '0') then  -- shift in the data byte from the ADC
+               s_adc_dout(0)          <= s_adc_spi_din;
+               s_adc_dout(7 downto 1) <= s_adc_dout(6 downto 0);
+               s_adc_rd_bit_cnt       <= s_adc_rd_bit_cnt + 1;
+            end if;
          end if;
 
          case s_sm_state is

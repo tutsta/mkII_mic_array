@@ -84,22 +84,26 @@ architecture rtl of adc_spi_stream is
    signal sm_state       : sm_states_t := idle_st;
    signal s_state_decode : std_logic_vector(2 downto 0);
 
-   signal s_sclk_div_cnt      : unsigned(4 downto 0)         := "00000";
+   signal s_sclk_div_cnt      : unsigned(4 downto 0)          := "00000";
    signal s_sclk_free_run     : std_logic;
-   signal s_sclk_free_run_d1  : std_logic                    := '0';
+   signal s_sclk_free_run_d1  : std_logic                     := '0';
    signal s_sclk_rising       : std_logic;
-   signal s_sclk_rising_d1    : std_logic                    := '0';
+   signal s_sclk_rising_d1    : std_logic                     := '0';
    signal s_sclk_falling      : std_logic;
-   signal s_sclk_free_run_inv : std_logic;
-   signal s_sclk_out_reg      : std_logic                    := '1';
-   signal s_spi_mux_sel       : std_logic                    := '0';
-   signal s_adc_spi_cs        : std_logic                    := '0';  -- inverted ADC chip select signal
-   signal s_sclk_en           : std_logic                    := '0';
-   signal s_bit_cnt_rst       : std_logic                    := '0';
-   signal s_bit_cnt           : unsigned(9 downto 0)         := (others => '0');  -- SPI bit counter
-   signal s_cmd_word_reg      : std_logic_vector(7 downto 0) := (others => '0');
-   signal s_adc_dout          : std_logic                    := '0';
+   signal s_sclk_out_reg      : std_logic                     := '1';
+   signal s_spi_mux_sel       : std_logic                     := '0';
+   signal s_adc_spi_cs        : std_logic                     := '0';  -- inverted ADC chip select signal
+   signal s_sclk_en           : std_logic                     := '0';
+   signal s_bit_cnt_rst       : std_logic                     := '0';
+   signal s_bit_cnt           : unsigned(9 downto 0)          := (others => '0');  -- SPI bit counter
+   signal s_cmd_word_reg      : std_logic_vector(7 downto 0)  := (others => '0');
+   signal s_adc_dout          : std_logic                     := '0';
    signal s_adc_spi_din       : std_logic;
+   signal s_adc_spi_din_reg   : std_logic                     := '0';
+   signal s_samp_word_bit_cnt : unsigned(4 downto 0)          := "00000";
+   signal s_samp_word         : std_logic_vector(23 downto 0) := (others => '0');
+   signal s_samp_word_latch   : std_logic_vector(31 downto 0) := (others => '0');
+   signal s_samp_fifo_wren    : std_logic                     := '0';
 
 
    ---------------------------------------------------------------------------
@@ -193,6 +197,24 @@ begin
             s_bit_cnt <= s_bit_cnt + 1;
          else
             s_bit_cnt <= s_bit_cnt;
+         end if;
+
+         -- Sample word bit counter
+         s_adc_spi_din_reg <= s_adc_spi_din;
+         s_samp_fifo_wren  <= '0';
+         if ((s_bit_cnt_rst = '1') or (s_samp_word_bit_cnt = to_unsigned(24, 5))) and (s_adc_spi_cs = '1') then
+            s_samp_word_bit_cnt             <= (others => '0');
+            s_samp_word                     <= (others => '0');
+            s_samp_word_latch(31 downto 24) <= (others => s_samp_word(23));  --sign extend to 32 bits
+            s_samp_word_latch(23 downto 0)  <= s_samp_word;
+            s_samp_fifo_wren                <= '1';
+         elsif (s_sclk_falling = '1') then
+            s_samp_word_bit_cnt      <= s_samp_word_bit_cnt + 1;
+            s_samp_word(0)           <= s_adc_spi_din_reg;
+            s_samp_word(23 downto 1) <= s_samp_word(22 downto 0);
+         else
+            s_samp_word_bit_cnt <= s_samp_word_bit_cnt;
+            s_samp_word         <= s_samp_word;
          end if;
 
          -- SCLK output for sample data streaming

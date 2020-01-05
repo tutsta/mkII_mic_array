@@ -90,14 +90,23 @@ architecture vgen of adc_spi_engine_vgen is
    ---------------------------------------------------------------------------
    --                          SIGNAL DECLARATIONS                          --
    ---------------------------------------------------------------------------
-   signal reset         : std_logic;
-   signal adc_spi_rw    : std_logic;
-   signal adc_wr_en     : std_logic;
-   signal cmd_addr      : std_logic_vector(6 downto 0);
-   signal byte_cnt      : std_logic_vector(4 downto 0);
-   signal adc_din       : std_logic_vector(7 downto 0);
-   signal adc_spi_din   : std_logic;
-   signal adc_din_array : data_array_t;
+   signal reset              : std_logic;
+   signal adc_spi_rw         : std_logic;
+   signal adc_wr_en          : std_logic;
+   signal cmd_addr           : std_logic_vector(6 downto 0);
+   signal byte_cnt           : std_logic_vector(4 downto 0);
+   signal adc_din            : std_logic_vector(7 downto 0);
+   signal adc_spi_din        : std_logic                      := '0';
+   signal adc_din_array      : data_array_t;
+   signal adc_spi_cs_reg     : std_logic                      := '1';
+   signal adc_spi_cs_d1      : std_logic                      := '1';
+   signal adc_spi_sclk_reg   : std_logic                      := '1';
+   signal adc_spi_sclk_d1    : std_logic                      := '1';
+   signal adc_spi_dout_reg   : std_logic                      := '0';
+   signal adc_spi_rw_latch   : std_logic                      := '0';
+   signal adc_rw_bit_latched : std_logic                      := '0';
+   signal adc_spi_bit_cnt    : unsigned(7 downto 0)           := "00000000";
+   signal adc_read_word      : std_logic_vector(255 downto 0) := x"ae0123456789abcdef0123456789abcdae0123456789abcdef0123456789abcd";
 
 
    ---------------------------------------------------------------------------
@@ -159,14 +168,61 @@ begin
    end process main_clock_gen;
 
 
+   -- ADC read process
+   -- models the read request response from the ADCs
+   adc_read_proc : process(spi_clk)
+   begin
+      if rising_edge(spi_clk) then
+
+         -- register the spi inputs from the host
+         adc_spi_cs_reg   <= adc_spi_cs;
+         adc_spi_cs_d1    <= adc_spi_cs_reg;
+         adc_spi_sclk_reg <= adc_spi_sclk;
+         adc_spi_sclk_d1  <= adc_spi_sclk_reg;
+         adc_spi_dout_reg <= adc_spi_dout;
+
+         -- reset the bit count on a falling edge of chip select
+         if ((adc_spi_cs_reg = '0') and (adc_spi_cs_d1 = '1')) then
+            adc_spi_bit_cnt <= "00000000";
+            adc_read_word   <= x"ae0123456789abcdef0123456789abcdae0123456789abcdef0123456789abcd";
+         end if;
+
+         -- decode the R/W bit from the first bit of the transaction
+         if (adc_spi_cs_reg = '0') then
+            -- detect falling edge on the SPI clock
+            if (((adc_spi_sclk_reg = '0') and (adc_spi_sclk_d1 = '1')) and (adc_rw_bit_latched = '0')) then
+               adc_spi_rw_latch   <= adc_spi_dout_reg;
+               adc_rw_bit_latched <= '1';
+            end if;
+         end if;
+
+         -- reset the R/W bit and bit latched on the rising edge of the chip select
+         if ((adc_spi_cs_reg = '1') and (adc_spi_cs_d1 = '0')) then
+            adc_spi_rw_latch   <= '0';
+            adc_rw_bit_latched <= '0';
+         end if;
 
 
-   ---------------------------------------------------------------------------
-   --  Process:  DRIVER
-   --  Purpose:  To drive the output signals of the vector generator.
-   --  Inputs:   Feedback from the DUT.
-   --  Outputs:  Inputs to DUT.
-   ---------------------------------------------------------------------------
+         -- detect the rising edge of the SPI clock
+         if (adc_spi_cs_reg = '0') and ((adc_spi_sclk = '1') and (adc_spi_sclk_reg = '0') and (adc_spi_rw_latch = '1')) then
+            adc_spi_bit_cnt <= adc_spi_bit_cnt + 1;
+            -- shift out ADC read data
+            if (adc_spi_bit_cnt > 4) then
+               adc_spi_din                 <= adc_read_word(255);
+               adc_read_word(255 downto 1) <= adc_read_word(254 downto 0);
+            end if;
+         end if;
+         
+      end if;  -- if rising_edge(spi_clk)
+   end process adc_read_proc;
+
+
+---------------------------------------------------------------------------
+--  Process:  DRIVER
+--  Purpose:  To drive the output signals of the vector generator.
+--  Inputs:   Feedback from the DUT.
+--  Outputs:  Inputs to DUT.
+---------------------------------------------------------------------------
 
 
    driver : process
@@ -227,13 +283,13 @@ begin
       --  Put your test vectors here!
       -----------------------------------------------------------------------
       wait until (spi_clk'event and spi_clk = '1');
-      reset       <= '0';
-      adc_spi_rw  <= '0';
-      adc_wr_en   <= '0';
-      cmd_addr    <= "0000000";
-      byte_cnt    <= "00000";
-      adc_din     <= "00000000";
-      adc_spi_din <= '0';
+      reset      <= '0';
+      adc_spi_rw <= '0';
+      adc_wr_en  <= '0';
+      cmd_addr   <= "0000000";
+      byte_cnt   <= "00000";
+      adc_din    <= "00000000";
+      -- adc_spi_din <= '0';
       wait until (spi_clk'event and spi_clk = '1');
       wait until (spi_clk'event and spi_clk = '1');
       wait until (spi_clk'event and spi_clk = '1');
