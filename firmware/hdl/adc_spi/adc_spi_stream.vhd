@@ -43,7 +43,7 @@ entity adc_spi_stream is
       reset : in std_logic;
 
       -- Host side signals
-      stream_go        : in  std_logic;
+      stream_go        : in  std_logic;  -- level sensitive input signal
       hst_adc_spi_cs   : in  std_logic;  -- active low ADC chip select
       hst_adc_spi_sclk : in  std_logic;
       hst_adc_spi_dout : in  std_logic;
@@ -54,7 +54,13 @@ entity adc_spi_stream is
       adc_spi_sclk : out std_logic;
       adc_spi_dout : out std_logic;
       adc_spi_din  : in  std_logic;
-      adc_drdy_n   : in  std_logic      -- active low sample data ready signal
+      adc_drdy_n   : in  std_logic;     -- active low sample data ready signal
+
+      -- FIFO data interface signals
+      sample_dout : out std_logic_vector(31 downto 0);
+      fifo_wren   : out std_logic;
+      fifo_full   : in  std_logic;
+      fifo_reset  : out std_logic
       );
 end adc_spi_stream;
 
@@ -84,6 +90,9 @@ architecture rtl of adc_spi_stream is
    signal sm_state       : sm_states_t := idle_st;
    signal s_state_decode : std_logic_vector(2 downto 0);
 
+   signal s_stream_go_reg     : std_logic                     := '0';
+   signal s_stream_go_pipe    : std_logic_vector(31 downto 0) := (others => '0');
+   signal s_stream_go_dly     : std_logic                     := '0';
    signal s_sclk_div_cnt      : unsigned(4 downto 0)          := "00000";
    signal s_sclk_free_run     : std_logic;
    signal s_sclk_free_run_d1  : std_logic                     := '0';
@@ -144,6 +153,11 @@ begin
    -- MUX the ADC SPI signals between the host PS interface and the strteaming
    -- data read interface
 
+   -- assign sample data fifo signals
+   sample_dout <= s_samp_word_latch;
+   fifo_wren   <= s_samp_fifo_wren;
+   fifo_reset  <= s_stream_go_reg and not(s_stream_go_pipe(0));
+
 
    -- debug - decode the state machine current state
    s_state_decode <= "000" when sm_state = idle_st else
@@ -187,6 +201,13 @@ begin
    begin
       if rising_edge(clk) then
 
+         -- register and pipeline delay for the stream_go input to allow for a
+         -- FIFO reset delay
+         s_stream_go_reg               <= stream_go;
+         s_stream_go_pipe(0)           <= s_stream_go_reg;
+         s_stream_go_pipe(31 downto 1) <= s_stream_go_pipe(30 downto 0);
+         s_stream_go_dly               <= s_stream_go_pipe(31);
+
          -- SPI bit counter
          s_sclk_free_run_d1 <= s_sclk_free_run;
          s_sclk_rising_d1   <= s_sclk_rising;
@@ -201,7 +222,6 @@ begin
 
          -- Sample word bit counter
          s_adc_spi_din_reg <= s_adc_spi_din;
-         s_samp_fifo_wren  <= '0';
          if ((s_bit_cnt_rst = '1') or (s_samp_word_bit_cnt = to_unsigned(24, 5))) and (s_adc_spi_cs = '1') then
             s_samp_word_bit_cnt             <= (others => '0');
             s_samp_word                     <= (others => '0');
@@ -215,6 +235,13 @@ begin
          else
             s_samp_word_bit_cnt <= s_samp_word_bit_cnt;
             s_samp_word         <= s_samp_word;
+         end if;
+
+         -- FIFO write enable signal
+         if (s_samp_word_bit_cnt = to_unsigned(24, 5)) and (s_adc_spi_cs = '1') and (fifo_full = '0') then
+            s_samp_fifo_wren <= '1';
+         else
+            s_samp_fifo_wren <= '0';
          end if;
 
          -- SCLK output for sample data streaming
@@ -249,7 +276,7 @@ begin
             case sm_state is
                when idle_st =>
                   sm_state <= idle_st;
-                  if (stream_go = '1') then
+                  if (s_stream_go_dly = '1') then
                      s_spi_mux_sel <= '1';
                      sm_state      <= wait_for_drdy_st;
                   end if;
@@ -257,7 +284,7 @@ begin
                when wait_for_drdy_st =>
                   sm_state      <= wait_for_drdy_st;
                   s_spi_mux_sel <= '1';
-                  if (stream_go = '0') then
+                  if (s_stream_go_dly = '0') then
                      sm_state      <= idle_st;
                      s_spi_mux_sel <= '0';
                   elsif (adc_drdy_n = '0') then

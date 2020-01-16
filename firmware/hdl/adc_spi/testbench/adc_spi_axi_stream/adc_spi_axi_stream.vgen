@@ -1,26 +1,21 @@
 
 -------------------------------------------------------------------------------
--- Copyright 2019.
--- CSIRO.
+-- Copyright 2020.
 -- All Rights Reserved.
 --  
 --
---   File Name:      adc_spi_stream.vgen
+--   File Name:      adc_spi_axi_stream.vgen
 --   Type:           VGEN
 --   Designer:       J. Tuthill
---   Created:        Sun Nov 10 21:55:15 2019
+--   Created:        Sat Jan 11 11:56:05 2020
 --   Template Rev:   2.0
 --
---   Title:          Vector generator for the SPI streaming data module.
+--   Title:          Vector generator for the ADC SPI to AXI-Stream interface.
 --   Description: 
 --   
 --   
 --   
 --
---   
---   The following is updated by RCS/CVS.
---   Modification History:
---   $Log$
 --   
 --   
 -------------------------------------------------------------------------------
@@ -35,7 +30,7 @@
 --                   dont_touch_tben_file = false
 --                    dont_touch_cmd_file = false
 --  TRACE SIGNALS
---  /ADC_SPI_STREAM_TBEN/DUT/*
+--  /ADC_SPI_AXI_STREAM_TBEN/DUT/*
 --
 -------------------------------------------------------------------------------
 
@@ -50,29 +45,34 @@ use ieee.numeric_std.all;
 
 
 -------------------------------------------------------------------------------
-entity adc_spi_stream_vgen is
+entity adc_spi_axi_stream_vgen is
    port (
       clk                  : buffer std_logic;
       reset_dly            : buffer std_logic;
+      m00_axis_aresetn_dly : buffer std_logic;
       stream_go_dly        : buffer std_logic;
-      hst_adc_spi_cs_dly   : buffer std_logic;
-      hst_adc_spi_sclk_dly : buffer std_logic;
-      hst_adc_spi_dout_dly : buffer std_logic;
-      hst_adc_spi_din      : in     std_logic;
-      adc_spi_cs           : in     std_logic;
-      adc_spi_sclk         : in     std_logic;
-      adc_spi_dout         : in     std_logic;
-      adc_spi_din_dly      : buffer std_logic;
+      spi0_sclk_i          : in     std_logic;
+      spi0_sclk_o          : buffer std_logic;
+      spi0_mosi_i          : in     std_logic;
+      spi0_mosi_o_dly      : buffer std_logic;
+      spi0_miso_i          : in     std_logic;
+      spi0_ss_i            : in     std_logic;
+      spi0_ss_o_dly        : buffer std_logic;
+      spi_sclk             : in     std_logic;
+      spi_mosi             : in     std_logic;
+      spi_miso_dly         : buffer std_logic;
+      spi_ss               : in     std_logic;
       adc_drdy_n_dly       : buffer std_logic;
-      sample_dout          : in     std_logic_vector(31 downto 0);
-      fifo_wren            : in     std_logic;
-      fifo_full_dly        : buffer std_logic;
-      fifo_reset           : in     std_logic
+      m00_axis_tvalid      : in     std_logic;
+      m00_axis_tdata       : in     std_logic_vector(31 downto 0);
+      m00_axis_tstrb       : in     std_logic_vector(3 downto 0);
+      m00_axis_tlast       : in     std_logic;
+      m00_axis_tready_dly  : buffer std_logic
       );
-end adc_spi_stream_vgen;
+end adc_spi_axi_stream_vgen;
 
 -------------------------------------------------------------------------------
-architecture vgen of adc_spi_stream_vgen is
+architecture vgen of adc_spi_axi_stream_vgen is
 
    ---------------------------------------------------------------------------
    --                 CONSTANT, TYPE AND GENERIC DEFINITIONS                --
@@ -93,12 +93,13 @@ architecture vgen of adc_spi_stream_vgen is
    --                          SIGNAL DECLARATIONS                          --
    ---------------------------------------------------------------------------
    signal reset            : std_logic;
+   signal m00_axis_aresetn : std_logic;
    signal stream_go        : std_logic;
-   signal hst_adc_spi_cs   : std_logic;
-   signal hst_adc_sclk     : std_logic;
-   signal hst_adc_spi_dout : std_logic;
-   signal adc_spi_din      : std_logic;
-   signal adc_drdy_n       : std_logic;
+   signal spi0_mosi_o      : std_logic;
+   signal spi0_ss_o        : std_logic;
+   signal spi_miso         : std_logic;
+   signal adc_drdy_n       : std_logic := '0';
+   signal m00_axis_tready  : std_logic;
 
    signal adc_spi_cs_reg     : std_logic                      := '0';
    signal adc_spi_cs_d1      : std_logic                      := '0';
@@ -111,10 +112,6 @@ architecture vgen of adc_spi_stream_vgen is
    signal adc_rw_bit_latched : std_logic                      := '0';
    signal adc_spi_bit_cnt    : unsigned(7 downto 0)           := "00000000";
    signal adc_read_word      : std_logic_vector(255 downto 0) := c_adc_read_word;
-
-   signal sample_data_latch : std_logic_vector(31 downto 0);
-   signal fifo_full         : std_logic;
-
 
    ---------------------------------------------------------------------------
    --                        COMPONENT DECLARATIONS                         --
@@ -135,17 +132,19 @@ begin
    ---------------------------------------------------------------------------
 
    reset_dly            <= reset            after inp_delay;
+   m00_axis_aresetn_dly <= m00_axis_aresetn after inp_delay;
    stream_go_dly        <= stream_go        after inp_delay;
-   hst_adc_spi_cs_dly   <= hst_adc_spi_cs   after inp_delay;
-   hst_adc_spi_sclk_dly <= hst_adc_sclk     after inp_delay;
-   hst_adc_spi_dout_dly <= hst_adc_spi_dout after inp_delay;
-   adc_spi_din_dly      <= adc_spi_din      after inp_delay;
+   spi0_mosi_o_dly      <= spi0_mosi_o      after inp_delay;
+   spi0_ss_o_dly        <= spi0_ss_o        after inp_delay;
+   spi_miso_dly         <= spi_miso         after inp_delay;
    adc_drdy_n_dly       <= adc_drdy_n       after inp_delay;
-   fifo_full_dly        <= fifo_full        after inp_delay;
+   m00_axis_tready_dly  <= m00_axis_tready  after inp_delay;
 
    adc_spi_cs_rising  <= adc_spi_cs_reg and not(adc_spi_cs_d1);
    adc_spi_cs_falling <= not(adc_spi_cs_reg) and adc_spi_cs_d1;
 
+   spi0_sclk_o <= '1';
+   spi0_ss_o   <= '1';
 
    ---------------------------------------------------------------------------
    --                         CONCURRENT PROCESSES                          --
@@ -159,10 +158,17 @@ begin
    --  Outputs:       CLK 
    --  (The following is used by av-testbench for signals in the vpat file.)
    --  Signals in this time domain:
-   --       hst_adc_spi_din
-   --       adc_spi_cs
-   --       adc_spi_sclk
-   --       adc_spi_dout
+   --       spi0_sclk_i
+   --       spi0_mosi_i
+   --       spi0_miso_i
+   --       spi0_ss_i
+   --       spi_sclk
+   --       spi_mosi
+   --       spi_ss
+   --       m00_axis_tvalid
+   --       m00_axis_tdata
+   --       m00_axis_tstrb
+   --       m00_axis_tlast
    ---------------------------------------------------------------------------
    main_clock_gen : process
    begin
@@ -188,11 +194,11 @@ begin
       if rising_edge(clk) then
 
          -- register the spi inputs from the host
-         adc_spi_cs_reg   <= adc_spi_cs;
+         adc_spi_cs_reg   <= spi_ss;
          adc_spi_cs_d1    <= adc_spi_cs_reg;
-         adc_spi_sclk_reg <= adc_spi_sclk;
+         adc_spi_sclk_reg <= spi_sclk;
          adc_spi_sclk_d1  <= adc_spi_sclk_reg;
-         adc_spi_dout_reg <= adc_spi_dout;
+         adc_spi_dout_reg <= spi_mosi;
 
          -- reset the bit count on a falling edge of chip select
          if ((adc_spi_cs_reg = '0') and (adc_spi_cs_d1 = '1')) then
@@ -217,28 +223,41 @@ begin
 
 
          -- detect the rising edge of the SPI clock
-         if (adc_spi_cs_reg = '0') and ((adc_spi_sclk = '1') and (adc_spi_sclk_reg = '0') and (adc_spi_rw_latch = '1')) then
+         if (adc_spi_cs_reg = '0') and ((spi_sclk = '1') and (adc_spi_sclk_reg = '0') and (adc_spi_rw_latch = '1')) then
             adc_spi_bit_cnt <= adc_spi_bit_cnt + 1;
             -- shift out ADC read data
             if (adc_spi_bit_cnt > 6) then
-               adc_spi_din                 <= adc_read_word(255);
+               spi_miso                    <= adc_read_word(255);
                adc_read_word(255 downto 1) <= adc_read_word(254 downto 0);
             end if;
+         end if;
+
+         -- simulate the ADC DRDY_N signal
+         -- de-assert DRDY_N on the falling edge of the ADC SPI chip-select
+         -- signal and re-assert on the rising edge
+         if ((adc_spi_cs_reg = '0') and (adc_spi_cs_d1 = '1')) then
+            adc_drdy_n <= '1';
+         elsif ((adc_spi_cs_reg = '1') and (adc_spi_cs_d1 = '0')) then
+            adc_drdy_n <= '0';
+         else
+            adc_drdy_n <= adc_drdy_n;
          end if;
          
       end if;  -- if rising_edge(clk)
    end process adc_read_proc;
 
-   -- FIFO model process
-   -- simplistic model of a FIFO write interface
-   fifo_wr_proc : process(clk)
+   -- AXI4-Stream TREADY process
+   axi_tready_proc : process (clk)
    begin
       if rising_edge(clk) then
-         if (fifo_wren = '1') then
-            sample_data_latch <= sample_dout;
+         if (m00_axis_tvalid = '1') then
+            m00_axis_tready <= '1';
+         else
+            m00_axis_tready <= '0';
          end if;
       end if;  -- if rising_edge(clk)
-   end process fifo_wr_proc;
+   end process axi_tready_proc;
+
 
    ---------------------------------------------------------------------------
    --  Process:  DRIVER
@@ -256,28 +275,25 @@ begin
       -----------------------------------------------------------------------
       wait until (clk'event and clk = '1');
       reset            <= '0';
+      m00_axis_aresetn <= '0';
       stream_go        <= '0';
-      hst_adc_spi_cs   <= '1';
-      hst_adc_sclk     <= '1';
-      hst_adc_spi_dout <= '0';
-      adc_drdy_n       <= '0';
-      fifo_full        <= '0';
+      spi0_mosi_o      <= '0';
 
       for i in 1 to 10 loop
          wait until (clk'event and clk = '1');
       end loop;
-      stream_go <= '1';
-      for i in 1 to 40 loop
-         wait until (clk'event and clk = '1');
-      end loop;
-      adc_drdy_n <= '1';
-      wait until ((clk'event and clk = '1') and (adc_spi_cs_rising = '1'));
-      for i in 1 to 10 loop
-         wait until (clk'event and clk = '1');
-      end loop;
-      adc_drdy_n <= '0';
-      wait until (clk'event and clk = '1');
-      stream_go  <= '0';
+      stream_go        <= '1';
+      m00_axis_aresetn <= '1';
+
+--      for i in 1 to 40 loop
+--         wait until (clk'event and clk = '1');
+--      end loop;
+--      wait until ((clk'event and clk = '1') and (adc_spi_cs_rising = '1'));
+--      for i in 1 to 10 loop
+--         wait until (clk'event and clk = '1');
+--      end loop;
+--      wait until (clk'event and clk = '1');
+--      stream_go <= '0';
 
       endless : loop
          wait until (clk'event and clk = '1');

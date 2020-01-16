@@ -15,6 +15,10 @@ add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/adc_spi_sclk
 add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/adc_spi_dout
 add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/adc_spi_din
 add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/adc_drdy_n
+add wave -noupdate -format Logic -radix hexadecimal /adc_spi_stream_tben/sample_dout
+add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/fifo_wren
+add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/fifo_full
+add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/fifo_reset
 
 add wave -noupdate -divider {VGEN SIGNALS}
 add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/vgen/reset
@@ -26,6 +30,8 @@ add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/vgen/adc_spi
 add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/vgen/adc_drdy_n
 add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/vgen/adc_spi_cs_reg 
 add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/vgen/adc_spi_cs_d1
+add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/vgen/adc_spi_cs_rising
+add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/vgen/adc_spi_cs_falling
 add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/vgen/adc_spi_sclk_reg
 add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/vgen/adc_spi_sclk_d1
 add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/vgen/adc_spi_dout_reg
@@ -33,10 +39,15 @@ add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/vgen/adc_spi
 add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/vgen/adc_rw_bit_latched
 add wave -noupdate -format Logic -radix unsigned /adc_spi_stream_tben/vgen/adc_spi_bit_cnt
 add wave -noupdate -format Logic -radix hexadecimal /adc_spi_stream_tben/vgen/adc_read_word
+add wave -noupdate -format Logic -radix hexadecimal /adc_spi_stream_tben/vgen/sample_data_latch
+add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/vgen/fifo_full
 
 add wave -noupdate -divider {DUT INTERNAL SIGNALS}
 add wave -noupdate -format literal /adc_spi_stream_tben/dut/sm_state
 add wave -noupdate -format Logic -radix unsigned /adc_spi_stream_tben/dut/s_state_decode
+add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/dut/s_stream_go_reg
+add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/dut/s_stream_go_pipe
+add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/dut/s_stream_go_dly
 add wave -noupdate -format Logic -radix unsigned /adc_spi_stream_tben/dut/s_sclk_div_cnt
 add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/dut/s_sclk_free_run
 add wave -noupdate -format Logic -radix binary /adc_spi_stream_tben/dut/s_sclk_free_run_d1

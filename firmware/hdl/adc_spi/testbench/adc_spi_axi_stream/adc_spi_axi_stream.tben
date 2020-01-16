@@ -1,0 +1,218 @@
+
+-------------------------------------------------------------------------------
+-- Copyright 2020.
+-- All Rights Reserved.
+--  
+--
+--   File Name:      adc_spi_axi_stream.tben
+--   Type:           TBEN
+--   Designer:       J. Tuthill
+--   Created:        Sat Jan 11 11:57:32 2020
+--   Template Rev:   2.0
+--
+--   Title:          Testbench for ADC_SPI_AXI_STREAM.
+--   Description:
+--              This file was automatically generated.
+--              Do not edit!
+--   
+--   
+--   
+--   
+--
+-- 
+-------------------------------------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+
+
+use std.textio.all;                     -- Text Input/Output.
+
+
+-- User defined use clauses
+
+
+
+
+-------------------------------------------------------------------------------
+entity adc_spi_axi_stream_tben is
+
+end adc_spi_axi_stream_tben;
+
+-------------------------------------------------------------------------------
+architecture tben of adc_spi_axi_stream_tben is
+
+   ---------------------------------------------------------------------------
+   --                          CONSTANT DECLARATIONS                        --
+   ---------------------------------------------------------------------------
+   constant inp_delay              : time := 3.0 ns;
+   constant main_clock_half_period : time := 10 ns;
+
+
+
+   ---------------------------------------------------------------------------
+   --                          SIGNAL DECLARATIONS                          --
+   ---------------------------------------------------------------------------
+   signal clk              : std_logic;
+   signal reset            : std_logic;
+   signal m00_axis_aresetn : std_logic;
+   signal stream_go        : std_logic;
+   signal spi0_sclk_i      : std_logic;
+   signal spi0_sclk_o      : std_logic;
+   signal spi0_mosi_i      : std_logic;
+   signal spi0_mosi_o      : std_logic;
+   signal spi0_miso_i      : std_logic;
+   signal spi0_ss_i        : std_logic;
+   signal spi0_ss_o        : std_logic;
+   signal spi_sclk         : std_logic;
+   signal spi_mosi         : std_logic;
+   signal spi_miso         : std_logic;
+   signal spi_ss           : std_logic;
+   signal adc_drdy_n       : std_logic;
+   signal m00_axis_tvalid  : std_logic;
+   signal m00_axis_tdata   : std_logic_vector(31 downto 0);
+   signal m00_axis_tstrb   : std_logic_vector(3 downto 0);
+   signal m00_axis_tlast   : std_logic;
+   signal m00_axis_tready  : std_logic;
+
+
+
+
+   ---------------------------------------------------------------------------
+   --                        COMPONENT DECLARATIONS                         --
+   ---------------------------------------------------------------------------
+
+   component adc_spi_axi_stream
+      generic (
+         g_implementation : boolean);
+      port (
+         clk              : in  std_logic;
+         reset            : in  std_logic;
+         m00_axis_aresetn : in  std_logic;
+         stream_go        : in  std_logic;
+         spi0_sclk_i      : out std_logic;
+         spi0_sclk_o      : in  std_logic;
+         spi0_mosi_i      : out std_logic;
+         spi0_mosi_o      : in  std_logic;
+         spi0_miso_i      : out std_logic;
+         spi0_ss_i        : out std_logic;
+         spi0_ss_o        : in  std_logic;
+         spi_sclk         : out std_logic;
+         spi_mosi         : out std_logic;
+         spi_miso         : in  std_logic;
+         spi_ss           : out std_logic;
+         adc_drdy_n       : in  std_logic;
+         m00_axis_tvalid  : out std_logic;
+         m00_axis_tdata   : out std_logic_vector(31 downto 0);
+         m00_axis_tstrb   : out std_logic_vector(3 downto 0);
+         m00_axis_tlast   : out std_logic;
+         m00_axis_tready  : in  std_logic);
+   end component;
+
+   component adc_spi_axi_stream_vgen
+      port (
+         clk                  : buffer std_logic;
+         reset_dly            : buffer std_logic;
+         m00_axis_aresetn_dly : buffer std_logic;
+         stream_go_dly        : buffer std_logic;
+         spi0_sclk_i          : in     std_logic;
+         spi0_sclk_o          : buffer std_logic;
+         spi0_mosi_i          : in     std_logic;
+         spi0_mosi_o_dly      : buffer std_logic;
+         spi0_miso_i          : in     std_logic;
+         spi0_ss_i            : in     std_logic;
+         spi0_ss_o_dly        : buffer std_logic;
+         spi_sclk             : in     std_logic;
+         spi_mosi             : in     std_logic;
+         spi_miso_dly         : buffer std_logic;
+         spi_ss               : in     std_logic;
+         adc_drdy_n_dly       : buffer std_logic;
+         m00_axis_tvalid      : in     std_logic;
+         m00_axis_tdata       : in     std_logic_vector(31 downto 0);
+         m00_axis_tstrb       : in     std_logic_vector(3 downto 0);
+         m00_axis_tlast       : in     std_logic;
+         m00_axis_tready_dly  : buffer std_logic
+         );
+   end component;
+
+
+
+begin
+   ---------------------------------------------------------------------------
+   --                    INSTANTIATE COMPONENTS                             --
+   ---------------------------------------------------------------------------
+
+   dut : adc_spi_axi_stream
+      generic map (
+         g_implementation => false)
+      port map (
+         clk              => clk,
+         reset            => reset,
+         m00_axis_aresetn => m00_axis_aresetn,
+         stream_go        => stream_go,
+         spi0_sclk_i      => spi0_sclk_i,
+         spi0_sclk_o      => spi0_sclk_o,
+         spi0_mosi_i      => spi0_mosi_i,
+         spi0_mosi_o      => spi0_mosi_o,
+         spi0_miso_i      => spi0_miso_i,
+         spi0_ss_i        => spi0_ss_i,
+         spi0_ss_o        => spi0_ss_o,
+         spi_sclk         => spi_sclk,
+         spi_mosi         => spi_mosi,
+         spi_miso         => spi_miso,
+         spi_ss           => spi_ss,
+         adc_drdy_n       => adc_drdy_n,
+         m00_axis_tvalid  => m00_axis_tvalid,
+         m00_axis_tdata   => m00_axis_tdata,
+         m00_axis_tstrb   => m00_axis_tstrb,
+         m00_axis_tlast   => m00_axis_tlast,
+         m00_axis_tready  => m00_axis_tready
+         );
+
+
+   vgen : adc_spi_axi_stream_vgen
+      port map (
+         clk                  => clk,
+         reset_dly            => reset,
+         m00_axis_aresetn_dly => m00_axis_aresetn,
+         stream_go_dly        => stream_go,
+         spi0_sclk_i          => spi0_sclk_i,
+         spi0_sclk_o          => spi0_sclk_o,
+         spi0_mosi_i          => spi0_mosi_i,
+         spi0_mosi_o_dly      => spi0_mosi_o,
+         spi0_miso_i          => spi0_miso_i,
+         spi0_ss_i            => spi0_ss_i,
+         spi0_ss_o_dly        => spi0_ss_o,
+         spi_sclk             => spi_sclk,
+         spi_mosi             => spi_mosi,
+         spi_miso_dly         => spi_miso,
+         spi_ss               => spi_ss,
+         adc_drdy_n_dly       => adc_drdy_n,
+         m00_axis_tvalid      => m00_axis_tvalid,
+         m00_axis_tdata       => m00_axis_tdata,
+         m00_axis_tstrb       => m00_axis_tstrb,
+         m00_axis_tlast       => m00_axis_tlast,
+         m00_axis_tready_dly  => m00_axis_tready
+         );
+
+
+   ---------------------------------------------------------------------------
+   --                        CONCURRENT SIGNAL ASSIGNMENTS                  --
+   ---------------------------------------------------------------------------
+
+
+   ---------------------------------------------------------------------------
+   --                         CONCURRENT PROCESSES                          --
+   ---------------------------------------------------------------------------
+
+   --  ** Start of file processes ** --
+
+
+
+
+   --  ** End of file processes ** --
+
+
+end tben;
+-------------------------------------------------------------------------------
