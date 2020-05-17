@@ -1,0 +1,323 @@
+
+-------------------------------------------------------------------------------
+-- Copyright 2020.
+-- CSIRO.
+-- All Rights Reserved.
+--  
+--
+--   File Name:      adc_spi_wrapper_v1_0.vgen
+--   Type:           VGEN
+--   Designer:       J. Tuthill
+--   Created:        Sun Apr 26 11:10:28 2020
+--   Template Rev:   2.0
+--
+--   Title:          Vector generator for ADC SPI top-level wrapper.
+--   Description: 
+--   
+--   
+--   
+--
+--   
+--   The following is updated by RCS/CVS.
+--   Modification History:
+--   $Log$
+--   
+--   
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+--  The following line is used by the testbench generator and the
+--  av-simulate function. 
+--  NOTE: The time can be changed from ns to; ps,ns,us,ms.
+--              TOTAL SIMULATION TIME (ns): 100 
+--                 generate_simulus_files = true
+--                 generate_capture_files = true
+--                   dont_touch_tben_file = false
+--                    dont_touch_cmd_file = false
+--  TRACE SIGNALS
+--  /ADC_SPI_WRAPPER_V1_0_TBEN/DUT/*
+--
+-------------------------------------------------------------------------------
+
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+
+-- Add user defined use clauses under here
+
+
+
+-------------------------------------------------------------------------------
+entity adc_spi_wrapper_v1_0_vgen is
+
+   generic (
+      c_s00_axi_data_width   : integer;
+      c_s00_axi_addr_width   : integer;
+      c_m00_axis_tdata_width : integer;
+      c_m00_axis_start_count : integer;
+      c_m01_axis_tdata_width : integer;
+      c_s01_axis_tdata_width : integer);
+
+   port (
+      spi0_sclk_i          : in     std_logic;
+      spi0_sclk_o          : buffer std_logic;
+      spi0_mosi_i          : in     std_logic;
+      spi0_mosi_o_dly      : buffer std_logic;
+      spi0_miso_i          : in     std_logic;
+      spi0_ss_i            : in     std_logic;
+      spi0_ss_o_dly        : buffer std_logic;
+      spi_sclk             : in     std_logic;
+      spi_mosi             : in     std_logic;
+      spi_miso_dly         : buffer std_logic;
+      spi_ss               : in     std_logic;
+      adc_drdy_n_dly       : buffer std_logic;
+      s00_axi_aclk         : buffer std_logic;
+      s00_axi_aresetn_dly  : buffer std_logic;
+      s00_axi_awaddr_dly   : buffer std_logic_vector(c_s00_axi_addr_width-1 downto 0);
+      s00_axi_awprot_dly   : buffer std_logic_vector(2 downto 0);
+      s00_axi_awvalid_dly  : buffer std_logic;
+      s00_axi_awready      : in     std_logic;
+      s00_axi_wdata_dly    : buffer std_logic_vector(c_s00_axi_data_width-1 downto 0);
+      s00_axi_wstrb_dly    : buffer std_logic_vector((c_s00_axi_data_width/8)-1 downto 0);
+      s00_axi_wvalid_dly   : buffer std_logic;
+      s00_axi_wready       : in     std_logic;
+      s00_axi_bresp        : in     std_logic_vector(1 downto 0);
+      s00_axi_bvalid       : in     std_logic;
+      s00_axi_bready_dly   : buffer std_logic;
+      s00_axi_araddr_dly   : buffer std_logic_vector(c_s00_axi_addr_width-1 downto 0);
+      s00_axi_arprot_dly   : buffer std_logic_vector(2 downto 0);
+      s00_axi_arvalid_dly  : buffer std_logic;
+      s00_axi_arready      : in     std_logic;
+      s00_axi_rdata        : in     std_logic_vector(c_s00_axi_data_width-1 downto 0);
+      s00_axi_rresp        : in     std_logic_vector(1 downto 0);
+      s00_axi_rvalid       : in     std_logic;
+      s00_axi_rready_dly   : buffer std_logic;
+      m00_axis_aclk        : buffer std_logic;
+      m00_axis_aresetn_dly : buffer std_logic;
+      m00_axis_tvalid      : in     std_logic;
+      m00_axis_tdata       : in     std_logic_vector(c_m00_axis_tdata_width-1 downto 0);
+      m00_axis_tstrb       : in     std_logic_vector((c_m00_axis_tdata_width/8)-1 downto 0);
+      m00_axis_tlast       : in     std_logic;
+      m00_axis_tready_dly  : buffer std_logic;
+      m01_axis_aclk        : buffer std_logic;
+      m01_axis_aresetn_dly : buffer std_logic;
+      m01_axis_tvalid      : in     std_logic;
+      m01_axis_tdata       : in     std_logic_vector(c_m01_axis_tdata_width-1 downto 0);
+      m01_axis_tstrb       : in     std_logic_vector((c_m01_axis_tdata_width/8)-1 downto 0);
+      m01_axis_tlast       : in     std_logic;
+      m01_axis_tready_dly  : buffer std_logic;
+      s01_axis_aclk        : buffer std_logic;
+      s01_axis_aresetn_dly : buffer std_logic;
+      s01_axis_tready      : in     std_logic;
+      s01_axis_tdata_dly   : buffer std_logic_vector(c_s01_axis_tdata_width-1 downto 0);
+      s01_axis_tstrb_dly   : buffer std_logic_vector((c_s01_axis_tdata_width/8)-1 downto 0);
+      s01_axis_tlast_dly   : buffer std_logic;
+      s01_axis_tvalid_dly  : buffer std_logic);
+
+end adc_spi_wrapper_v1_0_vgen;
+
+-------------------------------------------------------------------------------
+architecture vgen of adc_spi_wrapper_v1_0_vgen is
+
+   ---------------------------------------------------------------------------
+   --                 CONSTANT, TYPE AND GENERIC DEFINITIONS                --
+   ---------------------------------------------------------------------------
+   ---------------------------------------------------------------------------
+   --  The INP_DELAY constants correspond to tester timing groups. Edit to
+   --  change INP_DELAY values from the examples below. Delete the unused
+   --  INP_DELAY constants.
+   ---------------------------------------------------------------------------
+
+   constant inp_delay : time := 3.0 ns;
+
+   constant processor_clock_half_period : time := 10 ns;  -- 50MHz
+   constant spi_clock_half_period       : time := 40 ns;  -- 12.5MHz
+
+   ---------------------------------------------------------------------------
+   --                          SIGNAL DECLARATIONS                          --
+   ---------------------------------------------------------------------------
+   signal clk_ps  : std_logic;
+   signal clk_spi : std_logic;
+
+   signal spi0_mosi_o      : std_logic;
+   signal spi0_ss_o        : std_logic;
+   signal spi_miso         : std_logic;
+   signal adc_drdy_n       : std_logic;
+   signal s00_axi_aresetn  : std_logic;
+   signal s00_axi_awaddr   : std_logic_vector(c_s00_axi_addr_width-1 downto 0);
+   signal s00_axi_awprot   : std_logic_vector(2 downto 0);
+   signal s00_axi_awvalid  : std_logic;
+   signal s00_axi_wdata    : std_logic_vector(c_s00_axi_data_width-1 downto 0);
+   signal s00_axi_wstrb    : std_logic_vector((c_s00_axi_data_width/8)-1 downto 0);
+   signal s00_axi_wvalid   : std_logic;
+   signal s00_axi_bready   : std_logic;
+   signal s00_axi_araddr   : std_logic_vector(c_s00_axi_addr_width-1 downto 0);
+   signal s00_axi_arprot   : std_logic_vector(2 downto 0);
+   signal s00_axi_arvalid  : std_logic;
+   signal s00_axi_rready   : std_logic;
+   signal m00_axis_aresetn : std_logic;
+   signal m00_axis_tready  : std_logic;
+   signal m01_axis_aresetn : std_logic;
+   signal m01_axis_tready  : std_logic;
+   signal s01_axis_aresetn : std_logic;
+   signal s01_axis_tdata   : std_logic_vector(c_s01_axis_tdata_width-1 downto 0);
+   signal s01_axis_tstrb   : std_logic_vector((c_s01_axis_tdata_width/8)-1 downto 0);
+   signal s01_axis_tlast   : std_logic;
+   signal s01_axis_tvalid  : std_logic;
+
+
+
+   ---------------------------------------------------------------------------
+   --                        COMPONENT DECLARATIONS                         --
+   ---------------------------------------------------------------------------
+
+
+begin
+   ---------------------------------------------------------------------------
+   --                    INSTANTIATE COMPONENTS                             --
+   ---------------------------------------------------------------------------
+
+   ---------------------------------------------------------------------------
+   --                    CONCURRENT SIGNAL ASSIGNMENTS                      --
+   ---------------------------------------------------------------------------
+
+   -- Assign AXI clocks
+   s00_axi_aclk  <= clk_ps;  -- register interface --
+   m00_axis_aclk <= clk_ps;  -- FIFO-to-AXI Stream interface --
+   m01_axis_aclk <= clk_ps;  -- Datamover command interface --
+   s01_axis_aclk <= clk_ps;  -- Datamover status interface --
+
+   ---------------------------------------------------------------------------
+   --  Use the timing groups above to assign DUT input delays with respect to
+   --  the clock. Use these to test for Setup/Hold timing violations.
+   ---------------------------------------------------------------------------
+
+   spi0_mosi_o_dly      <= spi0_mosi_o      after inp_delay;
+   spi0_ss_o_dly        <= spi0_ss_o        after inp_delay;
+   spi_miso_dly         <= spi_miso         after inp_delay;
+   adc_drdy_n_dly       <= adc_drdy_n       after inp_delay;
+   s00_axi_aresetn_dly  <= s00_axi_aresetn  after inp_delay;
+   s00_axi_awaddr_dly   <= s00_axi_awaddr   after inp_delay;
+   s00_axi_awprot_dly   <= s00_axi_awprot   after inp_delay;
+   s00_axi_awvalid_dly  <= s00_axi_awvalid  after inp_delay;
+   s00_axi_wdata_dly    <= s00_axi_wdata    after inp_delay;
+   s00_axi_wstrb_dly    <= s00_axi_wstrb    after inp_delay;
+   s00_axi_wvalid_dly   <= s00_axi_wvalid   after inp_delay;
+   s00_axi_bready_dly   <= s00_axi_bready   after inp_delay;
+   s00_axi_araddr_dly   <= s00_axi_araddr   after inp_delay;
+   s00_axi_arprot_dly   <= s00_axi_arprot   after inp_delay;
+   s00_axi_arvalid_dly  <= s00_axi_arvalid  after inp_delay;
+   s00_axi_rready_dly   <= s00_axi_rready   after inp_delay;
+   m00_axis_aresetn_dly <= m00_axis_aresetn after inp_delay;
+   m00_axis_tready_dly  <= m00_axis_tready  after inp_delay;
+   m01_axis_aresetn_dly <= m01_axis_aresetn after inp_delay;
+   m01_axis_tready_dly  <= m01_axis_tready  after inp_delay;
+   s01_axis_aresetn_dly <= s01_axis_aresetn after inp_delay;
+   s01_axis_tdata_dly   <= s01_axis_tdata   after inp_delay;
+   s01_axis_tstrb_dly   <= s01_axis_tstrb   after inp_delay;
+   s01_axis_tlast_dly   <= s01_axis_tlast   after inp_delay;
+   s01_axis_tvalid_dly  <= s01_axis_tvalid  after inp_delay;
+
+
+   ---------------------------------------------------------------------------
+   --                         CONCURRENT PROCESSES                          --
+   ---------------------------------------------------------------------------
+
+
+   ---------------------------------------------------------------------------
+   --  Process:       PS_CLOCK_GEN 
+   --  Timing Domain: Processor
+   --  Purpose:       Generates Clock Waveform.
+   --  Outputs:       CLK_PS
+   ---------------------------------------------------------------------------
+   ps_clock_gen : process
+   begin
+      clk_ps <= '0';
+      --  Wait for the initial start up time.
+      --  (You can edit the times below; Constants maybe used.)
+      wait for processor_clock_half_period;
+
+      endless : loop
+         clk_ps <= '1';
+         wait for processor_clock_half_period;
+         clk_ps <= '0';
+         wait for processor_clock_half_period;
+      end loop;
+
+   end process ps_clock_gen;
+
+   ---------------------------------------------------------------------------
+   --  Process:       SPI_CLOCK_GEN 
+   --  Timing Domain: SPI
+   --  Purpose:       Generates Clock Waveform.
+   --  Outputs:       CLK_SPI
+   ---------------------------------------------------------------------------
+   spi_clock_gen : process
+   begin
+      clk_spi <= '0';
+      --  Wait for the initial start up time.
+      --  (You can edit the times below; Constants maybe used.)
+      wait for spi_clock_half_period;
+
+      endless : loop
+         clk_spi <= '1';
+         wait for spi_clock_half_period;
+         clk_spi <= '0';
+         wait for spi_clock_half_period;
+      end loop;
+
+   end process spi_clock_gen;
+
+
+
+   ---------------------------------------------------------------------------
+   --  Process:  DRIVER
+   --  Purpose:  To drive the output signals of the vector generator.
+   --  Inputs:   Feedback from the DUT.
+   --  Outputs:  Inputs to DUT.
+   ---------------------------------------------------------------------------
+
+
+   driver : process
+
+   begin
+      -----------------------------------------------------------------------
+      --  Put your test vectors here!
+      -----------------------------------------------------------------------
+      wait until (clk_ps'event and clk_ps = '1');
+--        spi0_mosi_o <= '0';
+--        spi0_ss_o <= '0';
+--        spi_miso <= '0';
+--        adc_drdy_n <= '0';
+--        s00_axi_aresetn <= '0';
+--        s00_axi_awaddr <= '0';
+--        s00_axi_awprot <= "000";
+--        s00_axi_awvalid <= '0';
+--        s00_axi_wdata <= '0';
+--        s00_axi_wstrb <= '0';
+--        s00_axi_wvalid <= '0';
+--        s00_axi_bready <= '0';
+--        s00_axi_araddr <= '0';
+--        s00_axi_arprot <= "000";
+--        s00_axi_arvalid <= '0';
+--        s00_axi_rready <= '0';
+--        m00_axis_aresetn <= '0';
+--        m00_axis_tready <= '0';
+--        m01_axis_aresetn <= '0';
+--        m01_axis_tready <= '0';
+--        s01_axis_aresetn <= '0';
+--        s01_axis_tdata <= '0';
+--        s01_axis_tstrb <= '0';
+--        s01_axis_tlast <= '0';
+--        s01_axis_tvalid <= '0';
+
+      endless : loop
+         wait until (clk_ps'event and clk_ps = '1');
+      end loop;
+
+
+   end process driver;
+
+end vgen;
