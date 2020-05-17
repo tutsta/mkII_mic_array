@@ -3,17 +3,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity adc_spi_wrapper_v1_0_s00_axi is
-   generic (
-      -- Users to add parameters here
-
-      -- User parameters ends
-      -- Do not modify the parameters beyond this line
-
-      -- Width of S_AXI data bus
-      c_s_axi_data_width : integer := 32;
-      -- Width of S_AXI address bus
-      c_s_axi_addr_width : integer := 6
-      );
    port (
       -- Users to add ports here
       adc_stream_go      : out std_logic;
@@ -31,7 +20,7 @@ entity adc_spi_wrapper_v1_0_s00_axi is
       -- Global Reset Signal. This Signal is Active LOW
       s_axi_aresetn : in  std_logic;
       -- Write address (issued by master, acceped by Slave)
-      s_axi_awaddr  : in  std_logic_vector(c_s_axi_addr_width-1 downto 0);
+      s_axi_awaddr  : in  std_logic_vector(5 downto 0);
       -- Write channel Protection type. This signal indicates the
       -- privilege and security level of the transaction, and whether
       -- the transaction is a data access or an instruction access.
@@ -43,11 +32,11 @@ entity adc_spi_wrapper_v1_0_s00_axi is
       -- to accept an address and associated control signals.
       s_axi_awready : out std_logic;
       -- Write data (issued by master, acceped by Slave) 
-      s_axi_wdata   : in  std_logic_vector(c_s_axi_data_width-1 downto 0);
+      s_axi_wdata   : in  std_logic_vector(31 downto 0);
       -- Write strobes. This signal indicates which byte lanes hold
       -- valid data. There is one write strobe bit for each eight
       -- bits of the write data bus.    
-      s_axi_wstrb   : in  std_logic_vector((c_s_axi_data_width/8)-1 downto 0);
+      s_axi_wstrb   : in  std_logic_vector(3 downto 0);
       -- Write valid. This signal indicates that valid write
       -- data and strobes are available.
       s_axi_wvalid  : in  std_logic;
@@ -64,7 +53,7 @@ entity adc_spi_wrapper_v1_0_s00_axi is
       -- can accept a write response.
       s_axi_bready  : in  std_logic;
       -- Read address (issued by master, acceped by Slave)
-      s_axi_araddr  : in  std_logic_vector(c_s_axi_addr_width-1 downto 0);
+      s_axi_araddr  : in  std_logic_vector(5 downto 0);
       -- Protection type. This signal indicates the privilege
       -- and security level of the transaction, and whether the
       -- transaction is a data access or an instruction access.
@@ -76,7 +65,7 @@ entity adc_spi_wrapper_v1_0_s00_axi is
       -- ready to accept an address and associated control signals.
       s_axi_arready : out std_logic;
       -- Read data (issued by slave)
-      s_axi_rdata   : out std_logic_vector(c_s_axi_data_width-1 downto 0);
+      s_axi_rdata   : out std_logic_vector(31 downto 0);
       -- Read response. This signal indicates the status of the
       -- read transfer.
       s_axi_rresp   : out std_logic_vector(1 downto 0);
@@ -92,14 +81,14 @@ end adc_spi_wrapper_v1_0_s00_axi;
 architecture arch_imp of adc_spi_wrapper_v1_0_s00_axi is
 
    -- AXI4LITE signals
-   signal axi_awaddr  : std_logic_vector(c_s_axi_addr_width-1 downto 0);
+   signal axi_awaddr  : std_logic_vector(5 downto 0);
    signal axi_awready : std_logic;
    signal axi_wready  : std_logic;
    signal axi_bresp   : std_logic_vector(1 downto 0);
    signal axi_bvalid  : std_logic;
-   signal axi_araddr  : std_logic_vector(c_s_axi_addr_width-1 downto 0);
+   signal axi_araddr  : std_logic_vector(5 downto 0);
    signal axi_arready : std_logic;
-   signal axi_rdata   : std_logic_vector(c_s_axi_data_width-1 downto 0);
+   signal axi_rdata   : std_logic_vector(31 downto 0);
    signal axi_rresp   : std_logic_vector(1 downto 0);
    signal axi_rvalid  : std_logic;
 
@@ -108,31 +97,31 @@ architecture arch_imp of adc_spi_wrapper_v1_0_s00_axi is
    -- ADDR_LSB is used for addressing 32/64 bit registers/memories
    -- ADDR_LSB = 2 for 32 bits (n downto 2)
    -- ADDR_LSB = 3 for 64 bits (n downto 3)
-   constant addr_lsb          : integer := (c_s_axi_data_width/32)+ 1;
+   constant addr_lsb          : integer := 2;
    constant opt_mem_addr_bits : integer := 3;
    ------------------------------------------------
    ---- Signals for user logic register space example
    --------------------------------------------------
    ---- Number of Slave Registers 16
-   signal slv_reg0            : std_logic_vector(c_s_axi_data_width-1 downto 0);
-   signal slv_reg1            : std_logic_vector(c_s_axi_data_width-1 downto 0);
-   signal slv_reg2            : std_logic_vector(c_s_axi_data_width-1 downto 0);
-   signal slv_reg3            : std_logic_vector(c_s_axi_data_width-1 downto 0);
-   signal slv_reg4            : std_logic_vector(c_s_axi_data_width-1 downto 0);
-   signal slv_reg5            : std_logic_vector(c_s_axi_data_width-1 downto 0);
-   signal slv_reg6            : std_logic_vector(c_s_axi_data_width-1 downto 0);
-   signal slv_reg7            : std_logic_vector(c_s_axi_data_width-1 downto 0);
-   signal slv_reg8            : std_logic_vector(c_s_axi_data_width-1 downto 0);
-   signal slv_reg9            : std_logic_vector(c_s_axi_data_width-1 downto 0);
-   signal slv_reg10           : std_logic_vector(c_s_axi_data_width-1 downto 0);
-   signal slv_reg11           : std_logic_vector(c_s_axi_data_width-1 downto 0);
-   signal slv_reg12           : std_logic_vector(c_s_axi_data_width-1 downto 0);
-   signal slv_reg13           : std_logic_vector(c_s_axi_data_width-1 downto 0);
-   signal slv_reg14           : std_logic_vector(c_s_axi_data_width-1 downto 0);
-   signal slv_reg15           : std_logic_vector(c_s_axi_data_width-1 downto 0);
+   signal slv_reg0            : std_logic_vector(31 downto 0);
+   signal slv_reg1            : std_logic_vector(31 downto 0);
+   signal slv_reg2            : std_logic_vector(31 downto 0);
+   signal slv_reg3            : std_logic_vector(31 downto 0);
+   signal slv_reg4            : std_logic_vector(31 downto 0);
+   signal slv_reg5            : std_logic_vector(31 downto 0);
+   signal slv_reg6            : std_logic_vector(31 downto 0);
+   signal slv_reg7            : std_logic_vector(31 downto 0);
+   signal slv_reg8            : std_logic_vector(31 downto 0);
+   signal slv_reg9            : std_logic_vector(31 downto 0);
+   signal slv_reg10           : std_logic_vector(31 downto 0);
+   signal slv_reg11           : std_logic_vector(31 downto 0);
+   signal slv_reg12           : std_logic_vector(31 downto 0);
+   signal slv_reg13           : std_logic_vector(31 downto 0);
+   signal slv_reg14           : std_logic_vector(31 downto 0);
+   signal slv_reg15           : std_logic_vector(31 downto 0);
    signal slv_reg_rden        : std_logic;
    signal slv_reg_wren        : std_logic;
-   signal reg_data_out        : std_logic_vector(c_s_axi_data_width-1 downto 0);
+   signal reg_data_out        : std_logic_vector(31 downto 0);
    signal byte_index          : integer;
    signal aw_en               : std_logic;
 
@@ -252,7 +241,7 @@ begin
             if (slv_reg_wren = '1') then
                case loc_addr is
                   when b"0000" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 0
@@ -260,7 +249,7 @@ begin
                         end if;
                      end loop;
                   when b"0001" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 1
@@ -268,7 +257,7 @@ begin
                         end if;
                      end loop;
                   when b"0010" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 2
@@ -276,7 +265,7 @@ begin
                         end if;
                      end loop;
                   when b"0011" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 3
@@ -284,7 +273,7 @@ begin
                         end if;
                      end loop;
                   when b"0100" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 4
@@ -292,7 +281,7 @@ begin
                         end if;
                      end loop;
                   when b"0101" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 5
@@ -300,7 +289,7 @@ begin
                         end if;
                      end loop;
                   when b"0110" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 6
@@ -308,7 +297,7 @@ begin
                         end if;
                      end loop;
                   when b"0111" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 7
@@ -316,7 +305,7 @@ begin
                         end if;
                      end loop;
                   when b"1000" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 8
@@ -324,7 +313,7 @@ begin
                         end if;
                      end loop;
                   when b"1001" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 9
@@ -332,7 +321,7 @@ begin
                         end if;
                      end loop;
                   when b"1010" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 10
@@ -340,7 +329,7 @@ begin
                         end if;
                      end loop;
                   when b"1011" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 11
@@ -348,7 +337,7 @@ begin
                         end if;
                      end loop;
                   when b"1100" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 12
@@ -356,7 +345,7 @@ begin
                         end if;
                      end loop;
                   when b"1101" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 13
@@ -364,7 +353,7 @@ begin
                         end if;
                      end loop;
                   when b"1110" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 14
@@ -372,7 +361,7 @@ begin
                         end if;
                      end loop;
                   when b"1111" =>
-                     for byte_index in 0 to (c_s_axi_data_width/8-1) loop
+                     for byte_index in 0 to 3 loop
                         if (s_axi_wstrb(byte_index) = '1') then
                            -- Respective byte enables are asserted as per write strobes                   
                            -- slave registor 15

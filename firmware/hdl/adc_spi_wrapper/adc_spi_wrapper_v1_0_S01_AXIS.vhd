@@ -3,15 +3,6 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity adc_spi_wrapper_v1_0_s01_axis is
-   generic (
-      -- Users to add parameters here
-
-      -- User parameters ends
-      -- Do not modify the parameters beyond this line
-
-      -- AXI4Stream sink: Data Width
-      c_s_axis_tdata_width : integer := 8
-      );
    port (
       -- Users to add ports here
       read_status     : in  std_logic;
@@ -28,9 +19,9 @@ entity adc_spi_wrapper_v1_0_s01_axis is
       -- Ready to accept data in
       s_axis_tready  : out std_logic;
       -- Data in
-      s_axis_tdata   : in  std_logic_vector(c_s_axis_tdata_width-1 downto 0);
+      s_axis_tdata   : in  std_logic_vector(7 downto 0);
       -- Byte qualifier
-      s_axis_tstrb   : in  std_logic_vector((c_s_axis_tdata_width/8)-1 downto 0);
+      s_axis_tstrb   : in  std_logic_vector(0 downto 0);
       -- Indicates boundary of last packet
       s_axis_tlast   : in  std_logic;
       -- Data is in valid

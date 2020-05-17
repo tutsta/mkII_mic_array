@@ -52,14 +52,6 @@ use ieee.numeric_std.all;
 -------------------------------------------------------------------------------
 entity adc_spi_wrapper_v1_0_vgen is
 
-   generic (
-      c_s00_axi_data_width   : integer;
-      c_s00_axi_addr_width   : integer;
-      c_m00_axis_tdata_width : integer;
-      c_m00_axis_start_count : integer;
-      c_m01_axis_tdata_width : integer;
-      c_s01_axis_tdata_width : integer);
-
    port (
       spi0_sclk_i          : in     std_logic;
       spi0_sclk_o          : buffer std_logic;
@@ -75,44 +67,44 @@ entity adc_spi_wrapper_v1_0_vgen is
       adc_drdy_n_dly       : buffer std_logic;
       s00_axi_aclk         : buffer std_logic;
       s00_axi_aresetn_dly  : buffer std_logic;
-      s00_axi_awaddr_dly   : buffer std_logic_vector(c_s00_axi_addr_width-1 downto 0);
+      s00_axi_awaddr_dly   : buffer std_logic_vector(5 downto 0);
       s00_axi_awprot_dly   : buffer std_logic_vector(2 downto 0);
       s00_axi_awvalid_dly  : buffer std_logic;
       s00_axi_awready      : in     std_logic;
-      s00_axi_wdata_dly    : buffer std_logic_vector(c_s00_axi_data_width-1 downto 0);
-      s00_axi_wstrb_dly    : buffer std_logic_vector((c_s00_axi_data_width/8)-1 downto 0);
+      s00_axi_wdata_dly    : buffer std_logic_vector(31 downto 0);
+      s00_axi_wstrb_dly    : buffer std_logic_vector(3 downto 0);
       s00_axi_wvalid_dly   : buffer std_logic;
       s00_axi_wready       : in     std_logic;
       s00_axi_bresp        : in     std_logic_vector(1 downto 0);
       s00_axi_bvalid       : in     std_logic;
       s00_axi_bready_dly   : buffer std_logic;
-      s00_axi_araddr_dly   : buffer std_logic_vector(c_s00_axi_addr_width-1 downto 0);
+      s00_axi_araddr_dly   : buffer std_logic_vector(5 downto 0);
       s00_axi_arprot_dly   : buffer std_logic_vector(2 downto 0);
       s00_axi_arvalid_dly  : buffer std_logic;
       s00_axi_arready      : in     std_logic;
-      s00_axi_rdata        : in     std_logic_vector(c_s00_axi_data_width-1 downto 0);
+      s00_axi_rdata        : in     std_logic_vector(31 downto 0);
       s00_axi_rresp        : in     std_logic_vector(1 downto 0);
       s00_axi_rvalid       : in     std_logic;
       s00_axi_rready_dly   : buffer std_logic;
       m00_axis_aclk        : buffer std_logic;
       m00_axis_aresetn_dly : buffer std_logic;
       m00_axis_tvalid      : in     std_logic;
-      m00_axis_tdata       : in     std_logic_vector(c_m00_axis_tdata_width-1 downto 0);
-      m00_axis_tstrb       : in     std_logic_vector((c_m00_axis_tdata_width/8)-1 downto 0);
+      m00_axis_tdata       : in     std_logic_vector(31 downto 0);
+      m00_axis_tstrb       : in     std_logic_vector(3 downto 0);
       m00_axis_tlast       : in     std_logic;
       m00_axis_tready_dly  : buffer std_logic;
       m01_axis_aclk        : buffer std_logic;
       m01_axis_aresetn_dly : buffer std_logic;
       m01_axis_tvalid      : in     std_logic;
-      m01_axis_tdata       : in     std_logic_vector(c_m01_axis_tdata_width-1 downto 0);
-      m01_axis_tstrb       : in     std_logic_vector((c_m01_axis_tdata_width/8)-1 downto 0);
+      m01_axis_tdata       : in     std_logic_vector(71 downto 0);
+      m01_axis_tstrb       : in     std_logic_vector(8 downto 0);
       m01_axis_tlast       : in     std_logic;
       m01_axis_tready_dly  : buffer std_logic;
       s01_axis_aclk        : buffer std_logic;
       s01_axis_aresetn_dly : buffer std_logic;
       s01_axis_tready      : in     std_logic;
-      s01_axis_tdata_dly   : buffer std_logic_vector(c_s01_axis_tdata_width-1 downto 0);
-      s01_axis_tstrb_dly   : buffer std_logic_vector((c_s01_axis_tdata_width/8)-1 downto 0);
+      s01_axis_tdata_dly   : buffer std_logic_vector(7 downto 0);
+      s01_axis_tstrb_dly   : buffer std_logic_vector(0 downto 0);
       s01_axis_tlast_dly   : buffer std_logic;
       s01_axis_tvalid_dly  : buffer std_logic);
 
@@ -146,14 +138,14 @@ architecture vgen of adc_spi_wrapper_v1_0_vgen is
    signal spi_miso         : std_logic;
    signal adc_drdy_n       : std_logic;
    signal s00_axi_aresetn  : std_logic;
-   signal s00_axi_awaddr   : std_logic_vector(c_s00_axi_addr_width-1 downto 0);
+   signal s00_axi_awaddr   : std_logic_vector(5 downto 0);
    signal s00_axi_awprot   : std_logic_vector(2 downto 0);
    signal s00_axi_awvalid  : std_logic;
-   signal s00_axi_wdata    : std_logic_vector(c_s00_axi_data_width-1 downto 0);
-   signal s00_axi_wstrb    : std_logic_vector((c_s00_axi_data_width/8)-1 downto 0);
+   signal s00_axi_wdata    : std_logic_vector(31 downto 0);
+   signal s00_axi_wstrb    : std_logic_vector(3 downto 0);
    signal s00_axi_wvalid   : std_logic;
    signal s00_axi_bready   : std_logic;
-   signal s00_axi_araddr   : std_logic_vector(c_s00_axi_addr_width-1 downto 0);
+   signal s00_axi_araddr   : std_logic_vector(5 downto 0);
    signal s00_axi_arprot   : std_logic_vector(2 downto 0);
    signal s00_axi_arvalid  : std_logic;
    signal s00_axi_rready   : std_logic;
@@ -162,8 +154,8 @@ architecture vgen of adc_spi_wrapper_v1_0_vgen is
    signal m01_axis_aresetn : std_logic;
    signal m01_axis_tready  : std_logic;
    signal s01_axis_aresetn : std_logic;
-   signal s01_axis_tdata   : std_logic_vector(c_s01_axis_tdata_width-1 downto 0);
-   signal s01_axis_tstrb   : std_logic_vector((c_s01_axis_tdata_width/8)-1 downto 0);
+   signal s01_axis_tdata   : std_logic_vector(7 downto 0);
+   signal s01_axis_tstrb   : std_logic_vector(0 downto 0);
    signal s01_axis_tlast   : std_logic;
    signal s01_axis_tvalid  : std_logic;
 

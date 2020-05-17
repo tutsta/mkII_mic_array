@@ -185,14 +185,14 @@ architecture arch_imp of adc_spi_wrapper_v1_0 is
 
    component adc_spi_wrapper_v1_0_m01_axis
       port (
-         datamover_command_word : in  std_logic_vector(31 downto 0);
+         datamover_command_word : in  std_logic_vector(71 downto 0);
          send_command           : in  std_logic;
          send_done              : out std_logic;
          m_axis_aclk            : in  std_logic;
          m_axis_aresetn         : in  std_logic;
          m_axis_tvalid          : out std_logic;
-         m_axis_tdata           : out std_logic_vector(31 downto 0);
-         m_axis_tstrb           : out std_logic_vector(3 downto 0);
+         m_axis_tdata           : out std_logic_vector(71 downto 0);
+         m_axis_tstrb           : out std_logic_vector(8 downto 0);
          m_axis_tlast           : out std_logic;
          m_axis_tready          : in  std_logic);
    end component;
@@ -377,14 +377,14 @@ begin
    l_adc_stream_go_rising <= l_adc_stream_go and not(l_adc_stream_go_reg);
 
    -- debug - decode the state machine current state
-   l_state_decode <= "0000" when sm_state = idle_st else
-                     "0001" when sm_state = latch_cmd_st else
-                     "0010" when sm_state = wait_fifo_full_st else
-                     "0011" when sm_state = send_txfr_cmd_st else
-                     "0100" when sm_state = read_txfr_stat_st else
-                     "0101" when sm_state = check_txfr_stat_st else
-                     "0110" when sm_state = inc_burst_cnt_st else
-                     "0111" when sm_state = check_burst_cnt_st else
+   l_state_decode <= "0000" when l_sm_state = idle_st else
+                     "0001" when l_sm_state = latch_cmd_st else
+                     "0010" when l_sm_state = wait_fifo_full_st else
+                     "0011" when l_sm_state = send_txfr_cmd_st else
+                     "0100" when l_sm_state = read_txfr_stat_st else
+                     "0101" when l_sm_state = check_txfr_stat_st else
+                     "0110" when l_sm_state = inc_burst_cnt_st else
+                     "0111" when l_sm_state = check_burst_cnt_st else
                      "1111";            -- undefined state
 
    top_control_proc : process(s00_axi_aclk)
@@ -395,90 +395,90 @@ begin
 
          -- Top-level control state machine
          if ((s00_axi_aresetn = '0') or (l_watchdog_err = '1')) then
-            sm_state            <= idle_st;
+            l_sm_state          <= idle_st;
             l_dm_send_command   <= '0';
             l_dm_read_status    <= '0';
             l_dm_burst_cnt_inc  <= '0';
             l_dm_start_addr_inc <= '0';
          else
-            case sm_state is
+            case l_sm_state is
                
                when idle_st =>
                   if (l_adc_stream_go_rising = '1') then
-                     sm_state <= latch_cmd_st;
+                     l_sm_state <= latch_cmd_st;
                   else
-                     sm_state <= idle_st;
+                     l_sm_state <= idle_st;
                   end if;
                   
                when latch_cmd_st =>
-                  sm_state <= wait_fifo_full_st;
+                  l_sm_state <= wait_fifo_full_st;
 
                when wait_fifo_full_st =>
                   l_dm_start_addr_inc <= '0';
                   if (l_fifo_full = '1') then
-                     sm_state          <= send_txfr_cmd_st;
+                     l_sm_state        <= send_txfr_cmd_st;
                      l_dm_send_command <= '1';
                   else
-                     sm_state          <= wait_fifo_full_st;
+                     l_sm_state        <= wait_fifo_full_st;
                      l_dm_send_command <= '0';
                   end if;
 
                when send_txfr_cmd_st =>
                   l_dm_send_command <= '0';
                   if (l_dm_send_done = '1') then
-                     sm_state         <= read_txfr_stat_st;
+                     l_sm_state       <= read_txfr_stat_st;
                      l_dm_read_status <= '1';
                   else
-                     sm_state         <= send_txfr_cmd_st;
+                     l_sm_state       <= send_txfr_cmd_st;
                      l_dm_read_status <= '0';
                   end if;
 
                when read_txfr_stat_st =>
                   l_dm_read_status <= '0';
                   if (l_dm_status_rdy = '1') then
-                     sm_state <= check_txfr_stat_st;
+                     l_sm_state <= check_txfr_stat_st;
                   else
-                     sm_state <= read_txfr_stat_st;
+                     l_sm_state <= read_txfr_stat_st;
                   end if;
 
                when check_txfr_stat_st =>
                   if (l_dm_status(7) = '1') then
-                     sm_state           <= inc_burst_cnt_st;
+                     l_sm_state         <= inc_burst_cnt_st;
                      l_dm_burst_cnt_inc <= '1';
                   else
-                     sm_state           <= check_txfr_stat_st;
+                     l_sm_state         <= check_txfr_stat_st;
                      l_dm_burst_cnt_inc <= '0';
                   end if;
 
                when inc_burst_cnt_st =>
                   l_dm_burst_cnt_inc <= '0';
-                  sm_state           <= check_burst_cnt_st;
+                  l_sm_state         <= check_burst_cnt_st;
 
                when check_burst_cnt_st =>
                   if (l_dm_burst_cnt_reached = '1') then
-                     sm_state            <= idle_st;
+                     l_sm_state          <= idle_st;
                      l_dm_start_addr_inc <= '0';
                   else
-                     sm_state            <= wait_fifo_full_st;
+                     l_sm_state          <= wait_fifo_full_st;
                      l_dm_start_addr_inc <= '1';
                   end if;
 
                -- unhandled states
                when others =>
-                  sm_state <= idle_st;
+                  l_sm_state <= idle_st;
 
             end case;
          end if;  --if (l_watchdog_err = '1') then
 
          -- latch the data mover start address and number of bursts
-         if (sm_state = latch_cmd_st) then
+         if (l_sm_state = latch_cmd_st) then
             l_dm_start_addr_latch <= unsigned(l_dm_start_addr);
             l_dm_bursts_latch     <= l_dm_bursts;
          elsif (l_dm_start_addr_inc = '1') then
             l_dm_start_addr_latch <= l_dm_start_addr_latch + to_unsigned(dm_bytes_to_transfer_c/4, 32);
          end if;
 
-         if ((s00_axi_aresetn = '0') or (sm_state = latch_cmd_st)) then
+         if ((s00_axi_aresetn = '0') or (l_sm_state = latch_cmd_st)) then
             l_dm_burst_cnt <= (others => '0');
          elsif (l_dm_burst_cnt_inc = '1') then
             l_dm_burst_cnt <= l_dm_burst_cnt + 1;
@@ -487,7 +487,7 @@ begin
          end if;
 
          -- watchdog counter on the state machine
-         if (sm_state = idle_st) then
+         if (l_sm_state = idle_st) then
             l_watchdog_cnt <= (others => '0');
          else
             l_watchdog_cnt <= l_watchdog_cnt + 1;
