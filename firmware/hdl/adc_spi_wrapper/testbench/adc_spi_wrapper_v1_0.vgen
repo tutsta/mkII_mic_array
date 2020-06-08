@@ -53,39 +53,43 @@ use ieee.numeric_std.all;
 entity adc_spi_wrapper_v1_0_vgen is
 
    port (
-      spi0_sclk_i          : in     std_logic;
-      spi0_sclk_o          : buffer std_logic;
-      spi0_mosi_i          : in     std_logic;
-      spi0_mosi_o_dly      : buffer std_logic;
-      spi0_miso_i          : in     std_logic;
-      spi0_ss_i            : in     std_logic;
-      spi0_ss_o_dly        : buffer std_logic;
-      spi_sclk             : in     std_logic;
-      spi_mosi             : in     std_logic;
-      spi_miso_dly         : buffer std_logic;
-      spi_ss               : in     std_logic;
-      adc_drdy_n_dly       : buffer std_logic;
-      s00_axi_aclk         : buffer std_logic;
-      s00_axi_aresetn_dly  : buffer std_logic;
-      s00_axi_awaddr_dly   : buffer std_logic_vector(5 downto 0);
-      s00_axi_awprot_dly   : buffer std_logic_vector(2 downto 0);
-      s00_axi_awvalid_dly  : buffer std_logic;
-      s00_axi_awready      : in     std_logic;
-      s00_axi_wdata_dly    : buffer std_logic_vector(31 downto 0);
-      s00_axi_wstrb_dly    : buffer std_logic_vector(3 downto 0);
-      s00_axi_wvalid_dly   : buffer std_logic;
-      s00_axi_wready       : in     std_logic;
-      s00_axi_bresp        : in     std_logic_vector(1 downto 0);
-      s00_axi_bvalid       : in     std_logic;
-      s00_axi_bready_dly   : buffer std_logic;
-      s00_axi_araddr_dly   : buffer std_logic_vector(5 downto 0);
-      s00_axi_arprot_dly   : buffer std_logic_vector(2 downto 0);
-      s00_axi_arvalid_dly  : buffer std_logic;
-      s00_axi_arready      : in     std_logic;
-      s00_axi_rdata        : in     std_logic_vector(31 downto 0);
-      s00_axi_rresp        : in     std_logic_vector(1 downto 0);
-      s00_axi_rvalid       : in     std_logic;
-      s00_axi_rready_dly   : buffer std_logic;
+      spi0_sclk_i     : in     std_logic;
+      spi0_sclk_o     : buffer std_logic;
+      spi0_mosi_i     : in     std_logic;
+      spi0_mosi_o_dly : buffer std_logic;
+      spi0_miso_i     : in     std_logic;
+      spi0_ss_i       : in     std_logic;
+      spi0_ss_o_dly   : buffer std_logic;
+      spi_sclk        : in     std_logic;
+      spi_mosi        : in     std_logic;
+      spi_miso_dly    : buffer std_logic;
+      spi_ss          : in     std_logic;
+      adc_drdy_n_dly  : buffer std_logic;
+
+      -- Ports of Axi Slave Bus Interface S00_AXI -- register interface --
+      s00_axi_aclk        : buffer std_logic;
+      s00_axi_aresetn_dly : buffer std_logic;
+      s00_axi_awaddr_dly  : buffer std_logic_vector(5 downto 0);
+      s00_axi_awprot_dly  : buffer std_logic_vector(2 downto 0);
+      s00_axi_awvalid_dly : buffer std_logic;
+      s00_axi_awready     : in     std_logic;
+      s00_axi_wdata_dly   : buffer std_logic_vector(31 downto 0);
+      s00_axi_wstrb_dly   : buffer std_logic_vector(3 downto 0);
+      s00_axi_wvalid_dly  : buffer std_logic;
+      s00_axi_wready      : in     std_logic;
+      s00_axi_bresp       : in     std_logic_vector(1 downto 0);
+      s00_axi_bvalid      : in     std_logic;
+      s00_axi_bready_dly  : buffer std_logic;
+      s00_axi_araddr_dly  : buffer std_logic_vector(5 downto 0);
+      s00_axi_arprot_dly  : buffer std_logic_vector(2 downto 0);
+      s00_axi_arvalid_dly : buffer std_logic;
+      s00_axi_arready     : in     std_logic;
+      s00_axi_rdata       : in     std_logic_vector(31 downto 0);
+      s00_axi_rresp       : in     std_logic_vector(1 downto 0);
+      s00_axi_rvalid      : in     std_logic;
+      s00_axi_rready_dly  : buffer std_logic;
+
+      -- Ports of Axi Master Bus Interface M00_AXIS -- FIFO-to-AXI Stream interface --
       m00_axis_aclk        : buffer std_logic;
       m00_axis_aresetn_dly : buffer std_logic;
       m00_axis_tvalid      : in     std_logic;
@@ -93,6 +97,8 @@ entity adc_spi_wrapper_v1_0_vgen is
       m00_axis_tstrb       : in     std_logic_vector(3 downto 0);
       m00_axis_tlast       : in     std_logic;
       m00_axis_tready_dly  : buffer std_logic;
+
+      -- Ports of Axi Master Bus Interface M01_AXIS -- Datamover command interface --
       m01_axis_aclk        : buffer std_logic;
       m01_axis_aresetn_dly : buffer std_logic;
       m01_axis_tvalid      : in     std_logic;
@@ -100,6 +106,8 @@ entity adc_spi_wrapper_v1_0_vgen is
       m01_axis_tstrb       : in     std_logic_vector(8 downto 0);
       m01_axis_tlast       : in     std_logic;
       m01_axis_tready_dly  : buffer std_logic;
+
+      -- Ports of Axi Slave Bus Interface S01_AXIS -- Datamover status interface --
       s01_axis_aclk        : buffer std_logic;
       s01_axis_aresetn_dly : buffer std_logic;
       s01_axis_tready      : in     std_logic;
@@ -130,8 +138,9 @@ architecture vgen of adc_spi_wrapper_v1_0_vgen is
    ---------------------------------------------------------------------------
    --                          SIGNAL DECLARATIONS                          --
    ---------------------------------------------------------------------------
-   signal clk_ps  : std_logic;
-   signal clk_spi : std_logic;
+   signal clk_ps    : std_logic;
+   signal clk_spi   : std_logic;
+   signal axi_reset : std_logic := '0';
 
    signal spi0_mosi_o      : std_logic;
    signal spi0_ss_o        : std_logic;
@@ -159,6 +168,18 @@ architecture vgen of adc_spi_wrapper_v1_0_vgen is
    signal s01_axis_tlast   : std_logic;
    signal s01_axis_tvalid  : std_logic;
 
+   -- local signals
+   signal l_trig_reg_read     : std_logic                     := '0';
+   signal l_trig_reg_read_d1  : std_logic                     := '0';
+   signal l_trig_reg_write    : std_logic                     := '0';
+   signal l_trig_reg_write_d1 : std_logic                     := '0';
+   signal l_s00_axi_araddr    : std_logic_vector(5 downto 0)  := (others => '0');
+   signal l_s00_axi_rdata     : std_logic_vector(31 downto 0) := (others => '0');
+   signal l_s00_axi_rresp     : std_logic_vector(1 downto 0)  := b"00";
+   signal l_s00_axi_awaddr    : std_logic_vector(5 downto 0)  := (others => '0');
+   signal l_s00_axi_wdata     : std_logic_vector(31 downto 0) := (others => '0');
+   signal l_s00_axi_bresp     : std_logic_vector(1 downto 0)  := b"00";
+
 
 
    ---------------------------------------------------------------------------
@@ -180,6 +201,12 @@ begin
    m00_axis_aclk <= clk_ps;  -- FIFO-to-AXI Stream interface --
    m01_axis_aclk <= clk_ps;  -- Datamover command interface --
    s01_axis_aclk <= clk_ps;  -- Datamover status interface --
+
+   -- Assign AXI reset signals (active low)
+   s00_axi_aresetn  <= not(axi_reset);
+   m00_axis_aresetn <= not(axi_reset);
+   m01_axis_aresetn <= not(axi_reset);
+   s01_axis_aresetn <= not(axi_reset);
 
    ---------------------------------------------------------------------------
    --  Use the timing groups above to assign DUT input delays with respect to
@@ -262,6 +289,63 @@ begin
 
    end process spi_clock_gen;
 
+   ---------------------------------------------------------------------------
+   --  Process:       AXI_REG_READ_PROC
+   ---------------------------------------------------------------------------
+   axi_reg_read_proc : process(clk_ps)
+   begin
+      if rising_edge(clk_ps) then
+         l_trig_reg_read_d1 <= l_trig_reg_read;
+         -- initiate the read cycle
+         if ((l_trig_reg_read = '1')and (l_trig_reg_read_d1 = '0')) then
+            s00_axi_araddr  <= l_s00_axi_araddr;
+            s00_axi_arvalid <= '1';
+         end if;
+         -- de-assert the address valid signal and asser the read ready signal
+         if (s00_axi_arready = '1') then
+            s00_axi_arvalid <= '0';
+            s00_axi_rready  <= '1';
+         end if;
+         -- de-assert the read ready signal and capture the data
+         if (s00_axi_rvalid = '1') then
+            s00_axi_rready  <= '0';
+            l_s00_axi_rdata <= s00_axi_rdata;
+            l_s00_axi_rresp <= s00_axi_rresp;
+         end if;
+      end if;  -- if rising_edge(clk_ps)
+   end process axi_reg_read_proc;
+
+   ---------------------------------------------------------------------------
+   --  Process:       AXI_REG_WRITE_PROC
+   ---------------------------------------------------------------------------
+   axi_reg_write_proc : process(clk_ps)
+   begin
+      if rising_edge(clk_ps) then
+         l_trig_reg_write_d1 <= l_trig_reg_write;
+         -- initiate the write cycle
+         if ((l_trig_reg_write = '1') and (l_trig_reg_write_d1 = '0')) then
+            s00_axi_awaddr  <= l_s00_axi_awaddr;
+            s00_axi_wdata   <= l_s00_axi_wdata;
+            s00_axi_awvalid <= '1';
+            s00_axi_wvalid  <= '1';
+            s00_axi_bready  <= '1';
+         end if;
+         -- de-assert the write address valid signal
+         if (s00_axi_awready = '1') then
+            s00_axi_awvalid <= '0';
+         end if;
+         -- de-assert the write data valid signal
+         if (s00_axi_wready = '1') then
+            s00_axi_wvalid <= '0';
+         end if;
+         -- de-assert the write response ready signal
+         if (s00_axi_bvalid = '1') then
+            s00_axi_bready  <= '0';
+            l_s00_axi_bresp <= s00_axi_bresp;
+         end if;
+      end if;  -- if rising_edge(clk_ps)
+   end process axi_reg_write_proc;
+
 
 
    ---------------------------------------------------------------------------
@@ -278,28 +362,65 @@ begin
       -----------------------------------------------------------------------
       --  Put your test vectors here!
       -----------------------------------------------------------------------
+      s00_axi_awprot <= "000";
+      s00_axi_arprot <= "000";
+      s00_axi_wstrb  <= "1111";  -- all bits valid in writes (no byte-enables)
       wait until (clk_ps'event and clk_ps = '1');
+      axi_reset      <= '1';
+      wait until (clk_ps'event and clk_ps = '1');
+      wait until (clk_ps'event and clk_ps = '1');
+      wait until (clk_ps'event and clk_ps = '1');
+      wait until (clk_ps'event and clk_ps = '1');
+      axi_reset      <= '0';
+
+      for i in 1 to 50 loop
+         wait until (clk_ps'event and clk_ps = '1');
+      end loop;
+
+      -- execute a register read transaction
+      l_s00_axi_araddr <= b"000000";
+      l_trig_reg_read  <= '1';
+      wait until (clk_ps'event and clk_ps = '1');
+      l_trig_reg_read  <= '0';
+
+      for i in 1 to 50 loop
+         wait until (clk_ps'event and clk_ps = '1');
+      end loop;
+
+      -- execute a register write transaction
+      l_s00_axi_awaddr <= b"000000";
+      l_s00_axi_wdata  <= x"600dbeef";
+      l_trig_reg_write <= '1';
+      wait until (clk_ps'event and clk_ps = '1');
+      l_trig_reg_write <= '0';
+
+      for i in 1 to 50 loop
+         wait until (clk_ps'event and clk_ps = '1');
+      end loop;
+
+      -- execute a register read transaction
+      l_s00_axi_araddr <= b"000000";
+      l_trig_reg_read  <= '1';
+      wait until (clk_ps'event and clk_ps = '1');
+      l_trig_reg_read  <= '0';
+
 --        spi0_mosi_o <= '0';
 --        spi0_ss_o <= '0';
 --        spi_miso <= '0';
 --        adc_drdy_n <= '0';
---        s00_axi_aresetn <= '0';
 --        s00_axi_awaddr <= '0';
---        s00_axi_awprot <= "000";
+--        
 --        s00_axi_awvalid <= '0';
 --        s00_axi_wdata <= '0';
 --        s00_axi_wstrb <= '0';
 --        s00_axi_wvalid <= '0';
 --        s00_axi_bready <= '0';
---        s00_axi_araddr <= '0';
---        s00_axi_arprot <= "000";
+--        
+--        
 --        s00_axi_arvalid <= '0';
 --        s00_axi_rready <= '0';
---        m00_axis_aresetn <= '0';
 --        m00_axis_tready <= '0';
---        m01_axis_aresetn <= '0';
 --        m01_axis_tready <= '0';
---        s01_axis_aresetn <= '0';
 --        s01_axis_tdata <= '0';
 --        s01_axis_tstrb <= '0';
 --        s01_axis_tlast <= '0';
