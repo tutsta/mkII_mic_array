@@ -12,6 +12,9 @@ set vhdl_file_list ""
 # Add source files to compile list
 
 #lappend vhdl_file_list ../../mic_array_ctrl_pkg.vhd
+lappend vhdl_file_list ../../../../../MiniZed/Vivado/adc_spi/adc_spi.srcs/sources_1/ip/fifo_generator_0/synth/fifo_generator_0.vhd
+lappend vhdl_file_list ../../adc_spi/adc_spi_stream.vhd
+lappend vhdl_file_list ../../adc_spi/adc_spi_stream_wrap.vhd
 lappend vhdl_file_list ../adc_spi_wrapper_v1_0_M00_AXIS.vhd
 lappend vhdl_file_list ../adc_spi_wrapper_v1_0_M01_AXIS.vhd
 lappend vhdl_file_list ../adc_spi_wrapper_v1_0_S00_AXI.vhd

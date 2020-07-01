@@ -135,6 +135,11 @@ architecture vgen of adc_spi_wrapper_v1_0_vgen is
    constant processor_clock_half_period : time := 10 ns;  -- 50MHz
    constant spi_clock_half_period       : time := 40 ns;  -- 12.5MHz
 
+   constant c_num_devices   : integer                        := 1;
+   constant c_adc_read_word : std_logic_vector(255 downto 0) := x"ae0123456789abcdef0123456789abcdae0123456789abcdef0123456789abcd";
+
+   type t_vector24 is array (natural range <>) of unsigned(23 downto 0);
+
    ---------------------------------------------------------------------------
    --                          SIGNAL DECLARATIONS                          --
    ---------------------------------------------------------------------------
@@ -145,7 +150,7 @@ architecture vgen of adc_spi_wrapper_v1_0_vgen is
    signal spi0_mosi_o      : std_logic;
    signal spi0_ss_o        : std_logic;
    signal spi_miso         : std_logic;
-   signal adc_drdy_n       : std_logic;
+   signal adc_drdy_n       : std_logic                    := '0';
    signal s00_axi_aresetn  : std_logic;
    signal s00_axi_awaddr   : std_logic_vector(5 downto 0);
    signal s00_axi_awprot   : std_logic_vector(2 downto 0);
@@ -164,7 +169,7 @@ architecture vgen of adc_spi_wrapper_v1_0_vgen is
    signal m01_axis_tready  : std_logic;
    signal s01_axis_aresetn : std_logic;
    signal s01_axis_tdata   : std_logic_vector(7 downto 0);
-   signal s01_axis_tstrb   : std_logic_vector(0 downto 0);
+   signal s01_axis_tstrb   : std_logic_vector(0 downto 0) := (others => '0');
    signal s01_axis_tlast   : std_logic;
    signal s01_axis_tvalid  : std_logic;
 
@@ -179,6 +184,20 @@ architecture vgen of adc_spi_wrapper_v1_0_vgen is
    signal l_s00_axi_awaddr    : std_logic_vector(5 downto 0)  := (others => '0');
    signal l_s00_axi_wdata     : std_logic_vector(31 downto 0) := (others => '0');
    signal l_s00_axi_bresp     : std_logic_vector(1 downto 0)  := b"00";
+
+   signal l_adc_spi_cs_reg     : std_logic                                     := '0';
+   signal l_adc_spi_cs_d1      : std_logic                                     := '0';
+   signal l_adc_spi_cs_rising  : std_logic;
+   signal l_adc_spi_cs_falling : std_logic;
+   signal l_adc_spi_sclk_reg   : std_logic                                     := '1';
+   signal l_adc_spi_sclk_d1    : std_logic                                     := '1';
+   signal l_adc_spi_dout_reg   : std_logic                                     := '0';
+   signal l_adc_spi_rw_latch   : std_logic                                     := '0';
+   signal l_adc_rw_bit_latched : std_logic                                     := '0';
+   signal l_adc_spi_bit_cnt    : unsigned(7 downto 0)                          := "00000000";
+   signal l_adc_read_word      : std_logic_vector(96*c_num_devices-1 downto 0) := (others => '0');
+
+   signal l_adc_samples : t_vector24(4*c_num_devices-1 downto 0) := (others => (others => '0'));
 
 
 
@@ -239,6 +258,9 @@ begin
    s01_axis_tlast_dly   <= s01_axis_tlast   after inp_delay;
    s01_axis_tvalid_dly  <= s01_axis_tvalid  after inp_delay;
 
+
+   l_adc_spi_cs_rising  <= l_adc_spi_cs_reg and not(l_adc_spi_cs_d1);
+   l_adc_spi_cs_falling <= not(l_adc_spi_cs_reg) and l_adc_spi_cs_d1;
 
    ---------------------------------------------------------------------------
    --                         CONCURRENT PROCESSES                          --
@@ -346,6 +368,82 @@ begin
       end if;  -- if rising_edge(clk_ps)
    end process axi_reg_write_proc;
 
+   ---------------------------------------------------------------------------
+   --  Process:       ADC_SAMPLE_READ_PROC
+   ---------------------------------------------------------------------------
+   adc_sample_read_proc : process(clk_ps)
+      variable v_samp_frame_cnt : integer := 0;
+   begin
+      if rising_edge(clk_ps) then
+
+         -- register the spi inputs from the host
+         l_adc_spi_cs_reg   <= spi_ss;
+         l_adc_spi_cs_d1    <= l_adc_spi_cs_reg;
+         l_adc_spi_sclk_reg <= spi_sclk;
+         l_adc_spi_sclk_d1  <= l_adc_spi_sclk_reg;
+         l_adc_spi_dout_reg <= spi_mosi;
+
+         -- reset the bit count on a falling edge of chip select
+         if ((l_adc_spi_cs_reg = '0') and (l_adc_spi_cs_d1 = '1')) then
+            v_samp_frame_cnt                                                  := v_samp_frame_cnt + 1;
+            l_adc_spi_bit_cnt                                                 <= "00000000";
+            l_adc_read_word((96*c_num_devices)-1 downto 96*(c_num_devices-1)) <= std_logic_vector(l_adc_samples(0)) &
+                                                                                 std_logic_vector(l_adc_samples(1)) &
+                                                                                 std_logic_vector(l_adc_samples(2)) &
+                                                                                 std_logic_vector(l_adc_samples(3));
+            for i in c_num_devices-1 downto 1 loop
+               l_adc_read_word((96*i)-1 downto 96*(i-1)) <= std_logic_vector(l_adc_samples(4*i + 1)) &
+                                                            std_logic_vector(l_adc_samples(4*i + 2)) &
+                                                            std_logic_vector(l_adc_samples(4*i + 3)) &
+                                                            std_logic_vector(l_adc_samples(4*i + 4));
+            end loop;
+            for i in 0 to c_num_devices-1 loop
+               l_adc_samples(4*i)   <= to_unsigned((4*i) + 4*(v_samp_frame_cnt-1)+1, 24);
+               l_adc_samples(4*i+1) <= to_unsigned((4*i) + 4*(v_samp_frame_cnt-1)+2, 24);
+               l_adc_samples(4*i+2) <= to_unsigned((4*i) + 4*(v_samp_frame_cnt-1)+3, 24);
+               l_adc_samples(4*i+3) <= to_unsigned((4*i) + 4*(v_samp_frame_cnt-1)+4, 24);
+            end loop;
+         end if;
+
+         -- decode the R/W bit from the first bit of the transaction
+         if (l_adc_spi_cs_reg = '0') then
+            -- detect falling edge on the SPI clock
+            if (((l_adc_spi_sclk_reg = '0') and (l_adc_spi_sclk_d1 = '1')) and (l_adc_rw_bit_latched = '0')) then
+               l_adc_spi_rw_latch   <= l_adc_spi_dout_reg;
+               l_adc_rw_bit_latched <= '1';
+            end if;
+         end if;
+
+         -- reset the R/W bit and bit latched on the rising edge of the chip select
+         if ((l_adc_spi_cs_reg = '1') and (l_adc_spi_cs_d1 = '0')) then
+            l_adc_spi_rw_latch   <= '0';
+            l_adc_rw_bit_latched <= '0';
+         end if;
+
+
+         -- detect the rising edge of the SPI clock
+         if (l_adc_spi_cs_reg = '0') and ((spi_sclk = '1') and (l_adc_spi_sclk_reg = '0') and (l_adc_spi_rw_latch = '1')) then
+            l_adc_spi_bit_cnt <= l_adc_spi_bit_cnt + 1;
+            -- shift out ADC read data
+            if (l_adc_spi_bit_cnt > 6) then
+               spi_miso                                     <= l_adc_read_word(96*c_num_devices-1);
+               l_adc_read_word(96*c_num_devices-1 downto 1) <= l_adc_read_word(96*c_num_devices-2 downto 0);
+            end if;
+         end if;
+
+         -- simulate the ADC DRDY_N signal
+         -- de-assert DRDY_N on the falling edge of the ADC SPI chip-select
+         -- signal and re-assert on the rising edge
+         if ((l_adc_spi_cs_reg = '0') and (l_adc_spi_cs_d1 = '1')) then
+            adc_drdy_n <= '1';
+         elsif ((l_adc_spi_cs_reg = '1') and (l_adc_spi_cs_d1 = '0')) then
+            adc_drdy_n <= '0';
+         else
+            adc_drdy_n <= adc_drdy_n;
+         end if;
+         
+      end if;  -- if rising_edge(clk_ps)
+   end process adc_sample_read_proc;
 
 
    ---------------------------------------------------------------------------
@@ -362,16 +460,29 @@ begin
       -----------------------------------------------------------------------
       --  Put your test vectors here!
       -----------------------------------------------------------------------
+      -- initialise ADC sample values
       s00_axi_awprot <= "000";
       s00_axi_arprot <= "000";
       s00_axi_wstrb  <= "1111";  -- all bits valid in writes (no byte-enables)
+
+      -- assert Datamover control interface tready signal
+      m01_axis_tready <= '1';
+
+      -- assert Datamove AXI stream interface tready signal
+      m00_axis_tready <= '1';
+
+      -- set the Datamover status word to a default "transaction OK" state
+      s01_axis_tvalid <= '1';
+      s01_axis_tdata  <= b"10000000";
+      s01_axis_tlast  <= '1';
+
       wait until (clk_ps'event and clk_ps = '1');
-      axi_reset      <= '1';
+      axi_reset <= '1';
       wait until (clk_ps'event and clk_ps = '1');
       wait until (clk_ps'event and clk_ps = '1');
       wait until (clk_ps'event and clk_ps = '1');
       wait until (clk_ps'event and clk_ps = '1');
-      axi_reset      <= '0';
+      axi_reset <= '0';
 
       for i in 1 to 50 loop
          wait until (clk_ps'event and clk_ps = '1');
@@ -389,12 +500,13 @@ begin
 
       -- execute a register write transaction
       l_s00_axi_awaddr <= b"000000";
-      l_s00_axi_wdata  <= x"600dbeef";
+      -- l_s00_axi_wdata  <= x"600dbeef";
+      l_s00_axi_wdata  <= x"00000001";
       l_trig_reg_write <= '1';
       wait until (clk_ps'event and clk_ps = '1');
       l_trig_reg_write <= '0';
 
-      for i in 1 to 50 loop
+      for i in 1 to 10 loop
          wait until (clk_ps'event and clk_ps = '1');
       end loop;
 
@@ -404,27 +516,16 @@ begin
       wait until (clk_ps'event and clk_ps = '1');
       l_trig_reg_read  <= '0';
 
---        spi0_mosi_o <= '0';
---        spi0_ss_o <= '0';
---        spi_miso <= '0';
---        adc_drdy_n <= '0';
---        s00_axi_awaddr <= '0';
---        
---        s00_axi_awvalid <= '0';
---        s00_axi_wdata <= '0';
---        s00_axi_wstrb <= '0';
---        s00_axi_wvalid <= '0';
---        s00_axi_bready <= '0';
---        
---        
---        s00_axi_arvalid <= '0';
---        s00_axi_rready <= '0';
---        m00_axis_tready <= '0';
---        m01_axis_tready <= '0';
---        s01_axis_tdata <= '0';
---        s01_axis_tstrb <= '0';
---        s01_axis_tlast <= '0';
---        s01_axis_tvalid <= '0';
+      for i in 1 to 10 loop
+         wait until (clk_ps'event and clk_ps = '1');
+      end loop;
+
+      -- execute a register write transaction
+--      l_s00_axi_wdata  <= x"00000000";
+--      l_trig_reg_write <= '1';
+--      wait until (clk_ps'event and clk_ps = '1');
+--      l_trig_reg_write <= '0';
+
 
       endless : loop
          wait until (clk_ps'event and clk_ps = '1');

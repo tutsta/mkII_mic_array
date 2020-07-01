@@ -68,7 +68,7 @@ begin
                   -- The sink starts accepting tdata when 
                   -- there tvalid is asserted to mark the
                   -- presence of valid streaming data 
-                  if (s_axis_tvalid = '1')then
+                  if ((s_axis_tvalid = '1') and (read_status_pending = '1')) then
                      mst_exec_state <= write_fifo;
                   else
                      mst_exec_state <= idle;

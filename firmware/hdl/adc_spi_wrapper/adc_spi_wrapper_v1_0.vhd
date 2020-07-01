@@ -3,6 +3,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity adc_spi_wrapper_v1_0 is
+   generic (
+      g_simulation : boolean := false);
    port (
       -- Users to add ports here
       -- ADC SPI interface signals
@@ -241,7 +243,7 @@ begin
 -- Instantiation of ADC SPI streaming interface
    adc_spi_stream_wrap_1 : adc_spi_stream_wrap
       generic map (
-         g_implementation => true)
+         g_implementation => not(g_simulation))
       port map (
          clk         => s00_axi_aclk,
          reset       => l_adc_spi_ctrl_reset,
@@ -269,7 +271,7 @@ begin
       port map (
          adc_stream_go      => l_adc_stream_go,
          adc_spi_ctrl_reset => l_adc_spi_ctrl_reset,
-         dm_reset_n         => l_dm_reset_n,
+         dm_reset_n         => l_dm_ps_reset,
          dm_start_addr      => l_dm_start_addr,
          dm_bursts          => l_dm_bursts,
          dm_status          => l_dm_status,
@@ -430,7 +432,6 @@ begin
                      l_dm_read_status <= '1';
                   else
                      l_sm_state       <= send_txfr_cmd_st;
-                     l_dm_read_status <= '0';
                   end if;
 
                when read_txfr_stat_st =>

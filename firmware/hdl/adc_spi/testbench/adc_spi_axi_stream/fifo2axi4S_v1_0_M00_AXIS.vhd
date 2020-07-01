@@ -16,7 +16,7 @@ entity fifo2axi4s_v1_0_m00_axis is
       );
    port (
       -- Users to add ports here
-      
+
       fifo_data_rdy : in  std_logic;
       fifo_din      : in  std_logic_vector(31 downto 0);
       fifo_rden     : out std_logic;
@@ -81,15 +81,15 @@ architecture implementation of fifo2axi4s_v1_0_m00_axis is
    -- The control state machine oversees the writing of input streaming data to the FIFO,
    -- and outputs the streaming data from the FIFO                                   
    type state is (idle,  -- This is the initial/idle state                    
-                   init_counter,  -- This state initializes the counter, once        
-                   -- the counter reaches C_M_START_COUNT count,     
-                   -- the state machine changes state to SEND_STREAM  
-                   send_stream);  -- In this state the                               
+                  init_counter,  -- This state initializes the counter, once        
+                  -- the counter reaches C_M_START_COUNT count,     
+                  -- the state machine changes state to SEND_STREAM  
+                  send_stream);  -- In this state the                               
    -- stream data is output through M_AXIS_TDATA        
    -- State variable                                                                 
    signal mst_exec_state : state;
    -- Example design FIFO read pointer                                               
-   signal read_pointer   : integer range 0 to bit_num-1;
+   signal read_pointer   : unsigned(bit_num-1 downto 0);
 
    -- AXI Stream internal signals
    --wait counter. The master waits for the user defined number of clock cycles before initiating a transfer.
@@ -172,12 +172,12 @@ begin
    --tvalid generation
    --axis_tvalid is asserted when the control state machine's state is SEND_STREAM and
    --number of output streaming data is less than the NUMBER_OF_OUTPUT_WORDS.
-   axis_tvalid <= '1' when ((mst_exec_state = send_stream) and (read_pointer < number_of_output_words)) else '0';
+   axis_tvalid <= '1' when ((mst_exec_state = send_stream) and (read_pointer < to_unsigned(number_of_output_words, bit_num))) else '0';
 
    -- AXI tlast generation                                                                        
    -- axis_tlast is asserted number of output streaming data is NUMBER_OF_OUTPUT_WORDS-1          
    -- (0 to NUMBER_OF_OUTPUT_WORDS-1)                                                             
-   axis_tlast <= '1' when (read_pointer = number_of_output_words-1) else '0';
+   axis_tlast <= '1' when (read_pointer = to_unsigned(number_of_output_words-1, bit_num)) else '0';
 
    -- Delay the axis_tvalid and axis_tlast signal by one clock cycle                              
    -- to match the latency of M_AXIS_TDATA                                                        
@@ -201,17 +201,17 @@ begin
    begin
       if (rising_edge (m_axis_aclk)) then
          if(m_axis_aresetn = '0') then
-            read_pointer <= 0;
+            read_pointer <= (others => '0');
             tx_done      <= '0';
          else
-            if (read_pointer <= number_of_output_words-1) then
+            if (read_pointer <= to_unsigned(number_of_output_words-1, bit_num)) then
                if (tx_en = '1') then
                   -- read pointer is incremented after every read from the FIFO          
                   -- when FIFO read signal is enabled.                                   
                   read_pointer <= read_pointer + 1;
                   tx_done      <= '0';
                end if;
-            elsif (read_pointer = number_of_output_words) then
+            elsif (read_pointer = to_unsigned(number_of_output_words, bit_num)) then
                -- tx_done is asserted when NUMBER_OF_OUTPUT_WORDS numbers of streaming data
                -- has been out.                                                         
                tx_done <= '1';
@@ -235,9 +235,14 @@ begin
          if(m_axis_aresetn = '0') then
             stream_data_out <= std_logic_vector(to_unsigned(sig_one, c_m_axis_tdata_width));
             s_fifo_rden     <= '0';
-         elsif (tx_en = '1') then       -- && M_AXIS_TSTRB(byte_index)
-            s_fifo_rden     <= '1';
-            stream_data_out <= fifo_din;
+         else
+            if (tx_en = '1') then       -- && M_AXIS_TSTRB(byte_index)
+               s_fifo_rden     <= '1';
+               stream_data_out <= fifo_din;
+            else
+               stream_data_out <= std_logic_vector(to_unsigned(sig_one, c_m_axis_tdata_width));
+               s_fifo_rden     <= '0';
+            end if;
          end if;
       end if;
    end process;

@@ -40,6 +40,7 @@ add wave -noupdate -format Logic -radix hexadecimal /adc_spi_axi_stream_tben/dut
 add wave -noupdate -format Logic -radix binary /adc_spi_axi_stream_tben/dut/adc_spi_stream_wrap_1/s_fifo_wren
 add wave -noupdate -format Logic -radix binary /adc_spi_axi_stream_tben/dut/adc_spi_stream_wrap_1/s_fifo_full
 add wave -noupdate -format Logic -radix binary /adc_spi_axi_stream_tben/dut/adc_spi_stream_wrap_1/s_fifo_reset
+add wave -noupdate -format Logic -radix unsigned /adc_spi_axi_stream_tben/vgen/axis_word_count
 
 add wave -noupdate -divider {FIFO TO AXI-S CONTROLLER SIGNALS}
 add wave -noupdate -format Logic -radix binary /adc_spi_axi_stream_tben/dut/fifo2axi4s_v1_0_1/s_fifo_data_rdy

@@ -67,7 +67,8 @@ entity adc_spi_axi_stream_vgen is
       m00_axis_tdata       : in     std_logic_vector(31 downto 0);
       m00_axis_tstrb       : in     std_logic_vector(3 downto 0);
       m00_axis_tlast       : in     std_logic;
-      m00_axis_tready_dly  : buffer std_logic
+      m00_axis_tready_dly  : buffer std_logic;
+      sim_only_fifo_rden   : in     std_logic
       );
 end adc_spi_axi_stream_vgen;
 
@@ -112,6 +113,9 @@ architecture vgen of adc_spi_axi_stream_vgen is
    signal adc_rw_bit_latched : std_logic                      := '0';
    signal adc_spi_bit_cnt    : unsigned(7 downto 0)           := "00000000";
    signal adc_read_word      : std_logic_vector(255 downto 0) := c_adc_read_word;
+
+   signal m00_axis_tvalid_reg : std_logic             := '0';
+   signal axis_word_count     : unsigned(15 downto 0) := (others => '0');
 
    ---------------------------------------------------------------------------
    --                        COMPONENT DECLARATIONS                         --
@@ -250,10 +254,17 @@ begin
    axi_tready_proc : process (clk)
    begin
       if rising_edge(clk) then
+         m00_axis_tvalid_reg <= m00_axis_tvalid;
          if (m00_axis_tvalid = '1') then
             m00_axis_tready <= '1';
          else
             m00_axis_tready <= '0';
+         end if;
+
+         if ((m00_axis_tvalid = '1') and (m00_axis_tvalid_reg = '0')) then
+            axis_word_count <= (others => '0');
+         elsif (sim_only_fifo_rden = '1') then
+            axis_word_count <= axis_word_count + 1;
          end if;
       end if;  -- if rising_edge(clk)
    end process axi_tready_proc;

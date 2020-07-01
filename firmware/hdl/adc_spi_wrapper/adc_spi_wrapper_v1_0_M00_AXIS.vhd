@@ -42,7 +42,7 @@ end adc_spi_wrapper_v1_0_m00_axis;
 
 architecture implementation of adc_spi_wrapper_v1_0_m00_axis is
    -- Total number of output data                                              
-   constant number_of_output_words : integer := 8;
+   constant number_of_output_words : integer := 64;
 
    -- function called clogb2 that returns an integer which has the   
    -- value of the ceiling of the log base 2.                              

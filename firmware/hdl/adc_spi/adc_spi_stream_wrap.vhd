@@ -78,6 +78,7 @@ architecture rtl of adc_spi_stream_wrap is
    
    constant c_sck_div_ratio_pwr : integer := 3;
    constant c_num_devices       : integer := 1;
+   constant c_burst_fifo_level  : integer := 128;  -- FIFO level to signal that a AXI burst transaction is ready
 
 
    ---------------------------------------------------------------------------
@@ -92,10 +93,13 @@ architecture rtl of adc_spi_stream_wrap is
    signal s_adc_drdy_n   : std_logic;
 
    -- sample data FIFO signals
-   signal s_fifo_din   : std_logic_vector(31 downto 0);
-   signal s_fifo_wren  : std_logic;
-   signal s_fifo_full  : std_logic;
-   signal s_fifo_reset : std_logic;
+   signal s_fifo_din        : std_logic_vector(31 downto 0);
+   signal s_fifo_wren       : std_logic;
+   signal s_fifo_full       : std_logic;
+   signal s_fifo_empty      : std_logic;
+   signal s_fifo_reset      : std_logic;
+   signal s_fifo_data_count : std_logic_vector(8 downto 0);
+   signal s_burst_rdy       : std_logic := '0';
 
    ---------------------------------------------------------------------------
    --                        COMPONENT DECLARATIONS                         --
@@ -140,14 +144,15 @@ architecture rtl of adc_spi_stream_wrap is
 
    component fifo_generator_0
       port (
-         clk   : in  std_logic;
-         srst  : in  std_logic;
-         din   : in  std_logic_vector(31 downto 0);
-         wr_en : in  std_logic;
-         rd_en : in  std_logic;
-         dout  : out std_logic_vector(31 downto 0);
-         full  : out std_logic;
-         empty : out std_logic);
+         clk        : in  std_logic;
+         srst       : in  std_logic;
+         din        : in  std_logic_vector(31 downto 0);
+         wr_en      : in  std_logic;
+         rd_en      : in  std_logic;
+         dout       : out std_logic_vector(31 downto 0);
+         full       : out std_logic;
+         empty      : out std_logic;
+         data_count : out std_logic_vector(8 downto 0));
    end component;
 
 begin
@@ -218,20 +223,22 @@ begin
 
    fifo_generator_0_1 : fifo_generator_0
       port map (
-         clk   => clk,
-         srst  => s_fifo_reset,
-         din   => s_fifo_din,
-         wr_en => s_fifo_wren,
-         rd_en => fifo_rden,
-         dout  => fifo_dout,
-         full  => s_fifo_full,
-         empty => fifo_empty);
+         clk        => clk,
+         srst       => s_fifo_reset,
+         din        => s_fifo_din,
+         wr_en      => s_fifo_wren,
+         rd_en      => fifo_rden,
+         dout       => fifo_dout,
+         full       => s_fifo_full,
+         empty      => s_fifo_empty,
+         data_count => s_fifo_data_count);
 
    ---------------------------------------------------------------------------
    --                      CONCURRENT SIGNAL ASSIGNMENTS                    --
    ---------------------------------------------------------------------------
 
-   fifo_full <= s_fifo_full;
+   fifo_empty <= s_fifo_empty;
+   fifo_full  <= s_burst_rdy;
 
    -- tie unused PS SPI interface signals to recommended levels
    spi0_ss_i   <= '1';
@@ -248,17 +255,23 @@ begin
    --  Inputs:   
    --  Outputs:  
    ---------------------------------------------------------------------------
---   adc_spi_stream_wrap_process : process
+   adc_spi_stream_wrap_process : process (clk)
 
---   begin
-
---   end process adc_spi_stream_wrap_process;
-
-   
-   
+   begin
+      if rising_edge(clk) then
+         if (reset = '1') then
+            s_burst_rdy <= '0';
+         else
+            if (s_fifo_empty = '1') then
+               s_burst_rdy <= '0';
+            elsif (s_fifo_data_count > std_logic_vector(to_unsigned(c_burst_fifo_level, 9))) then
+               s_burst_rdy <= '1';
+            else
+               s_burst_rdy <= s_burst_rdy;
+            end if;
+         end if;  -- if (reset = '1')
+      end if;  -- if rising_edge(clk)
+   end process adc_spi_stream_wrap_process;
 
 end rtl;
 -------------------------------------------------------------------------------
-
-
-

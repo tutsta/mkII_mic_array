@@ -63,7 +63,9 @@ entity adc_spi_axi_stream is
       m00_axis_tdata  : out std_logic_vector(31 downto 0);
       m00_axis_tstrb  : out std_logic_vector(3 downto 0);
       m00_axis_tlast  : out std_logic;
-      m00_axis_tready : in  std_logic
+      m00_axis_tready : in  std_logic;
+
+      sim_only_fifo_rden : out std_logic
       );
 end adc_spi_axi_stream;
 
@@ -185,6 +187,7 @@ begin
    --                      CONCURRENT SIGNAL ASSIGNMENTS                    --
    ---------------------------------------------------------------------------
 
+   sim_only_fifo_rden <= s_fifo_rden;
 
    ---------------------------------------------------------------------------
    --                         CONCURRENT PROCESSES                          --
